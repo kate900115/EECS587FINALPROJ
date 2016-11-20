@@ -3,6 +3,7 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <map>
 
 #define size 500
 #define MAX 10000000
@@ -15,6 +16,12 @@ class body
 	public:
 		double mass_center;
 		double mass_sum;
+		double array_num;
+		
+		//constructor
+		//mass initialized as -100 indicate the result of the center of mass is not computed
+		//array_num initialized as -1 indicate it don't contain any body
+		body(){ mass_center=-100; mass_sum = -100; array_num = -1;}
 };
 
 
@@ -35,8 +42,12 @@ int main(int argc, char** argv)
 	double vx[size];
 	double vy[size];
 	
+	map<int, body> node;
+	
 	string line;
 	int index = 0;
+
+	
 	
 	//read the input file
 	//find the max_x, max_y, min_x, min_y
@@ -63,8 +74,14 @@ int main(int argc, char** argv)
 	}	
 
 	//insert each body to the tree structure
+	node[0] = 
+	for (int i=1; i<size; i++)
+	{
+		
+	}
 
 
+	//update the mass_sum of from the leaf to the top
 	return 0;
 
 }
