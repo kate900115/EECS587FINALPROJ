@@ -11,17 +11,43 @@
 
 using namespace std;
 
+double max_x;
+double min_x;
+double max_y;
+double min_y;
+
 class body
 {
 	public:
 		double mass_center;
 		double mass_sum;
 		double array_num;
+		double NW_x;
+		double NW_y;
+		double NE_x;
+		double NE_y;
+		double SW_x;
+		double SW_y;
+		double SE_x;
+		double SE_y;
 		
 		//constructor
 		//mass initialized as -100 indicate the result of the center of mass is not computed
 		//array_num initialized as -1 indicate it don't contain any body
-		body(){ mass_center=-100; mass_sum = -100; array_num = -1;}
+		body()
+		{
+			mass_center=-100; 
+			mass_sum = -100; 
+			array_num = -1;
+			NW_x = min_x;
+			NW_y = max_y;
+			NE_x = max_x;
+			NE_y = max_y; 
+			SW_x = min_x;
+			SW_y = min_y;
+			SE_x = max_x;
+			SE_y = min_y;
+		}
 };
 
 
@@ -42,7 +68,7 @@ int main(int argc, char** argv)
 	double vx[size];
 	double vy[size];
 	
-	map<int, body> node;
+	map<int, body> nodes;
 	
 	string line;
 	int index = 0;
@@ -74,10 +100,21 @@ int main(int argc, char** argv)
 	}	
 
 	//insert each body to the tree structure
-	node[0] = 
+	body first;
+	first.array_num = 0;
+	nodes[0] = first;
+
 	for (int i=1; i<size; i++)
 	{
-		
+		body new_insert;
+		new_insert.array_num = i;
+		for (unsigned j=0; j<nodes.size();)
+		{
+			if (nodes[j].array_num !=-1)
+			{
+				if (new_insert)
+			}
+		}
 	}
 
 
