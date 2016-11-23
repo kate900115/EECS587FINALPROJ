@@ -54,6 +54,8 @@ class body
 
 int main(int argc, char** argv)
 {
+	// the max coordinate and the minimum coordinate of 
+	// the 2D-space
 	double max_x=MIN;
 	double min_x=MAX;
 	double max_y=MIN;
@@ -61,14 +63,18 @@ int main(int argc, char** argv)
 	string FileName = string(argv[1]);
 	ifstream InFile.open(FileName.c_str());
 	
-	
+	// coordinate
 	double x[size];
 	double y[size];
+	// mass
 	double m[size];
+	
+	// speed
 	double vx[size];
 	double vy[size];
 	
 	map<int, body> nodes;
+	map<int, body>::iterator it;
 	
 	string line;
 	int index = 0;
@@ -84,12 +90,12 @@ int main(int argc, char** argv)
 		sstr << line;
 		sstr >> word;
 		x[index] = atof(word.c_str());
-		max_x = x[index]>MAX? x[index]:MAX;
-		min_x = x[index]<MIN? x[index]:MIN;
+		max_x = x[index]>max_x? x[index]:max_x;
+		min_x = x[index]<min_x? x[index]:min_x;
 		sstr >> word;
 		y[index] = atof(word.c_str());
-		max_y = y[index]>MAX? y[index]:MAX;
-		min_y = y[index]<MIN? y[index]:MIN;
+		max_y = y[index]>max_y? y[index]:max_y;
+		min_y = y[index]<min_y? y[index]:min_y;
 		sstr >> word;
 		m[index] = atof(word.c_str());
 		sstr >> word;
@@ -97,7 +103,9 @@ int main(int argc, char** argv)
 		sstr >> word;
 		vy[index] = atof(word.c_str());
 		index++;
-	}	
+	}
+
+	InFile.close();	
 
 	//insert each body to the tree structure
 	body first;
@@ -106,13 +114,140 @@ int main(int argc, char** argv)
 
 	for (int i=1; i<size; i++)
 	{
-		body new_insert;
-		new_insert.array_num = i;
-		for (unsigned j=0; j<nodes.size();)
+		int x_start = min_x;
+		int x_end = max_x;
+		int y_start = min_y;
+		int y_end = max_y;
+		int j=0;
+		while (nodes[j].array_num!=-1)
 		{
-			if (nodes[j].array_num !=-1)
+			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
 			{
-				if (new_insert)
+				j=4*j+1;
+				// if the nodes doesn't exist
+				// insert the new node.
+				if (nodes.find(j)!=NULL)
+				{
+					// create the first node
+					body NewNode; 
+					NewNode.array_num = i;
+					map[j]=NewNode;
+					// create the rest 3 nodes
+					body NewNode1;
+					map[j+1] = NewNode1;
+					body NewNode2;
+					map[j+2] = NewNode2;
+					body NewNode3;
+					map[j+3] = NewNode3;
+					break;
+
+				}
+				// if the node exist
+				// but have not map to a node
+				else if (nodes[j].array_num==-1)
+				{
+					nodes[j].array_num = i;
+					break;
+				}
+				// update the x_start, x_end, y_start, y_end;
+				x_end=(x_start+x_end)/2;
+				y_end=(y_start+y_end)/2;
+			}
+			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+			{
+				j=4*j+2;
+				// if the nodes doesn't exist
+				// insert the new node.
+				if (nodes.find(j)!=NULL)
+				{
+					// create the first node
+					body NewNode; 
+					NewNode.array_num = i;
+					map[j]=NewNode;
+					// create the rest 3 nodes
+					body NewNode1;
+					map[j-1] = NewNode1;
+					body NewNode2;
+					map[j+1] = NewNode2;
+					body NewNode3;
+					map[j+2] = NewNode3;
+					break;
+
+				}
+				// if the node exist
+				// but have not map to a node
+				else if (nodes[j].array_num==-1)
+				{
+					nodes[j].array_num = i;
+					break;
+				}
+				// update the x_start, x_end, y_start, y_end;
+				x_end=(x_start+x_end)/2;
+				y_start=(y_start+y_end)/2;
+			}
+			else if ((x[i]>=(start_x+end_x)/2)&&(y[i]<(start_y+end_y)/2))
+			{
+				j=4*j+3;
+				// if the nodes doesn't exist
+				// insert the new node.
+				if (nodes.find(j)!=NULL)
+				{
+					// create the first node
+					body NewNode; 
+					NewNode.array_num = i;
+					map[j]=NewNode;
+					// create the rest 3 nodes
+					body NewNode1;
+					map[j-2] = NewNode1;
+					body NewNode2;
+					map[j-1] = NewNode2;
+					body NewNode3;
+					map[j+1] = NewNode3;
+					break;
+
+				}
+				// if the node exist
+				// but have not map to a node
+				else if (nodes[j].array_num==-1)
+				{
+					nodes[j].array_num = i;
+					break;
+				}
+				// update the x_start, x_end, y_start, y_end;
+				x_start=(x_start+x_end)/2;
+				y_end=(y_start+y_end)/2;
+			}
+			else
+			{
+				j=4*j+4;
+				// if the nodes doesn't exist
+				// insert the new node.
+				if (nodes.find(j)!=NULL)
+				{
+					// create the first node
+					body NewNode; 
+					NewNode.array_num = i;
+					map[j]=NewNode;
+					// create the rest 3 nodes
+					body NewNode1;
+					map[j-2] = NewNode1;
+					body NewNode2;
+					map[j-1] = NewNode2;
+					body NewNode3;
+					map[j+1] = NewNode3;
+					break;
+
+				}
+				// if the node exist
+				// but have not map to a node
+				else if (nodes[j].array_num==-1)
+				{
+					nodes[j].array_num = i;
+					break;
+				}
+				// update the x_start, x_end, y_start, y_end;
+				x_start=(x_start+x_end)/2;
+				y_start=(y_start+y_end)/2;
 			}
 		}
 	}
