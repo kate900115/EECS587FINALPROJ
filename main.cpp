@@ -315,21 +315,38 @@ int main(int argc, char** argv)
 			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
 			{
 				j=4*j+2;
+				x_end=(x_start+x_end)/2;
+				y_start=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)!=NULL)
+				if (nodes.find(j)==NULL)
 				{
 					// create the first node
 					body NewNode; 
-					NewNode.array_num = i;
-					map[j]=NewNode;
+					NewNode.NW_x = x_start;
+					NewNode.NW_y = y_start;
+					NewNode.SE_x = x_end;
+					NewNode.SE_y = y_end;
+					nodes[j]=NewNode;
 					// create the rest 3 nodes
 					body NewNode1;
-					map[j-1] = NewNode1;
+					NewNode1.NW_x = x_start;
+					NewNode1.NW_y = y_start;
+					NewNode1.SE_x = x_end;
+					NewNode1.SE_y = y_end;
+					nodes[j-1] = NewNode1;
 					body NewNode2;
-					map[j+1] = NewNode2;
+					NewNode2.NW_x = x_start;
+					NewNode2.NW_y = y_start;
+					NewNode2.SE_x = x_end;
+					NewNode2.SE_y = y_end;
+					nodes[j+1] = NewNode2;
 					body NewNode3;
-					map[j+2] = NewNode3;
+					NewNode3.NW_x = x_start;
+					NewNode3.NW_y = y_start;
+					NewNode3.SE_x = x_end;
+					NewNode3.SE_y = y_end;
+					nodes[j+2] = NewNode3;
 					break;
 
 				}
@@ -338,30 +355,193 @@ int main(int argc, char** argv)
 				else if (nodes[j].array_num==-1)
 				{
 					nodes[j].array_num = i;
+					nodes[j].NW_x = x_start;
+					nodes[j].NW_y = y_start;
+					nodes[j].SE_x = x_end;
+					nodes[j].SE_y = y_end;
 					break;
 				}
-				// update the x_start, x_end, y_start, y_end;
-				x_end=(x_start+x_end)/2;
-				y_start=(y_start+y_end)/2;
+				// if the node exist 
+				// and map to a node
+				// move this node to next level
+				else
+				{	
+					// if the node is the leaf
+					if (nodes.find(4*j+1)==NULL)
+					{
+						int temp = nodes[j].array_num;
+						nodes[j].array_num = -1;
+						
+						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							// put the original node here
+							body NextNode; 
+							NextNode.array_num = temp;
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							body NextNode1; 
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.array_num = temp;
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.array_num = temp;
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.array_num = temp;
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+					}
+				}
 			}
 			else if ((x[i]>=(start_x+end_x)/2)&&(y[i]<(start_y+end_y)/2))
 			{
 				j=4*j+3;
+				x_start=(x_start+x_end)/2;
+				y_end=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)!=NULL)
+				if (nodes.find(j)==NULL)
 				{
 					// create the first node
 					body NewNode; 
-					NewNode.array_num = i;
-					map[j]=NewNode;
+					NewNode.NW_x = x_start;
+					NewNode.NW_y = y_start;
+					NewNode.SE_x = x_end;
+					NewNode.SE_y = y_end;
+					nodes[j]=NewNode;
 					// create the rest 3 nodes
 					body NewNode1;
-					map[j-2] = NewNode1;
+					NewNode1.NW_x = x_start;
+					NewNode1.NW_y = y_start;
+					NewNode1.SE_x = x_end;
+					NewNode1.SE_y = y_end;
+					nodes[j-2] = NewNode1;
 					body NewNode2;
-					map[j-1] = NewNode2;
+					NewNode2.NW_x = x_start;
+					NewNode2.NW_y = y_start;
+					NewNode2.SE_x = x_end;
+					NewNode2.SE_y = y_end;
+					nodes[j-1] = NewNode2;
 					body NewNode3;
-					map[j+1] = NewNode3;
+					NewNode3.NW_x = x_start;
+					NewNode3.NW_y = y_start;
+					NewNode3.SE_x = x_end;
+					NewNode3.SE_y = y_end;
+					nodes[j+1] = NewNode3;
 					break;
 
 				}
@@ -370,30 +550,193 @@ int main(int argc, char** argv)
 				else if (nodes[j].array_num==-1)
 				{
 					nodes[j].array_num = i;
+					nodes[j].NW_x = x_start;
+					nodes[j].NW_y = y_start;
+					nodes[j].SE_x = x_end;
+					nodes[j].SE_y = y_end;
 					break;
 				}
-				// update the x_start, x_end, y_start, y_end;
-				x_start=(x_start+x_end)/2;
-				y_end=(y_start+y_end)/2;
+				// if the node exist 
+				// and map to a node
+				// move this node to next level
+				else
+				{	
+					// if the node is the leaf
+					if (nodes.find(4*j+1)==NULL)
+					{
+						int temp = nodes[j].array_num;
+						nodes[j].array_num = -1;
+						
+						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							// put the original node here
+							body NextNode; 
+							NextNode.array_num = temp;
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							body NextNode1; 
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.array_num = temp;
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.array_num = temp;
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.array_num = temp;
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+					}
+				}
 			}
 			else
 			{
-				j=4*j+4;
+				j=4*j+3;
+				x_start=(x_start+x_end)/2;
+				y_start=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)!=NULL)
+				if (nodes.find(j)==NULL)
 				{
 					// create the first node
 					body NewNode; 
-					NewNode.array_num = i;
-					map[j]=NewNode;
+					NewNode.NW_x = x_start;
+					NewNode.NW_y = y_start;
+					NewNode.SE_x = x_end;
+					NewNode.SE_y = y_end;
+					nodes[j]=NewNode;
 					// create the rest 3 nodes
 					body NewNode1;
-					map[j-2] = NewNode1;
+					NewNode1.NW_x = x_start;
+					NewNode1.NW_y = y_start;
+					NewNode1.SE_x = x_end;
+					NewNode1.SE_y = y_end;
+					nodes[j-3] = NewNode1;
 					body NewNode2;
-					map[j-1] = NewNode2;
+					NewNode2.NW_x = x_start;
+					NewNode2.NW_y = y_start;
+					NewNode2.SE_x = x_end;
+					NewNode2.SE_y = y_end;
+					nodes[j-2] = NewNode2;
 					body NewNode3;
-					map[j+1] = NewNode3;
+					NewNode3.NW_x = x_start;
+					NewNode3.NW_y = y_start;
+					NewNode3.SE_x = x_end;
+					NewNode3.SE_y = y_end;
+					nodes[j-1] = NewNode3;
 					break;
 
 				}
@@ -402,11 +745,157 @@ int main(int argc, char** argv)
 				else if (nodes[j].array_num==-1)
 				{
 					nodes[j].array_num = i;
+					nodes[j].NW_x = x_start;
+					nodes[j].NW_y = y_start;
+					nodes[j].SE_x = x_end;
+					nodes[j].SE_y = y_end;
 					break;
 				}
-				// update the x_start, x_end, y_start, y_end;
-				x_start=(x_start+x_end)/2;
-				y_start=(y_start+y_end)/2;
+				// if the node exist 
+				// and map to a node
+				// move this node to next level
+				else
+				{	
+					// if the node is the leaf
+					if (nodes.find(4*j+1)==NULL)
+					{
+						int temp = nodes[j].array_num;
+						nodes[j].array_num = -1;
+						
+						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							// put the original node here
+							body NextNode; 
+							NextNode.array_num = temp;
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							body NextNode1; 
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = x_start;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = (x_start+x_end)/2;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.array_num = temp;
+							NextNode1.NW_x = x_start;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = (x_start+x_end)/2;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = x_start;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = (x_start+x_end)/2;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = x_start;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = (x_start+x_end)/2;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = y_start;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = (y_start+y_end)/2;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = y_start;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = (y_start+y_end)/2;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.array_num = temp;
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = y_start;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = (y_start+y_end)/2;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = y_start;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = (y_start+y_end)/2;
+							nodes[4*j+4] = NextNode3;
+						}
+						else
+						{
+							// create the first node
+							body NextNode; 
+							NextNode.NW_x = (x_start+x_end)/2;
+							NextNode.NW_y = (y_start+y_end)/2;
+							NextNode.SE_x = x_end;
+							NextNode.SE_y = y_end;
+							nodes[4*j+1] = NextNode;
+							// create the second node
+							// put the original node here
+							body NextNode1; 
+							NextNode1.NW_x = (x_start+x_end)/2;
+							NextNode1.NW_y = (y_start+y_end)/2;
+							NextNode1.SE_x = x_end;
+							NextNode1.SE_y = y_end;
+							nodes[4*j+2] = NextNode1;
+							// create the third node
+							body NextNode2; 
+							NextNode2.NW_x = (x_start+x_end)/2;
+							NextNode2.NW_y = (y_start+y_end)/2;
+							NextNode2.SE_x = x_end;
+							NextNode2.SE_y = y_end;
+							nodes[4*j+3] = NextNode2;
+							// create the fourth node
+							body NextNode3; 
+							NextNode3.array_num = temp;
+							NextNode3.NW_x = (x_start+x_end)/2;
+							NextNode3.NW_y = (y_start+y_end)/2;
+							NextNode3.SE_x = x_end;
+							NextNode3.SE_y = y_end;
+							nodes[4*j+4] = NextNode3;
+						}
+					}
+				}
 			}
 		}
 	}
