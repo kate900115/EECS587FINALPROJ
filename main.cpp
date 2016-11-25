@@ -33,7 +33,8 @@ class body
 		//array_num initialized as -1 indicate it don't contain any body
 		body()
 		{
-			mass_center=-100; 
+			mass_center_x = -100; 
+			mass_center_y = -100;
 			mass_sum = -100; 
 			array_num = -1;
 			NW_x = min_x;
@@ -116,7 +117,6 @@ int main(int argc, char** argv)
 
 	//insert each body to the tree structure
 	quadtree[0].array_num = 0;
-	quadtree[0].mass_center = m[0];
 	quadtree[0].mass_sum = m[0];
 	quadtree[0].NW_x = min_x;
 	quadtree[0].NW_y = min_y;
@@ -169,7 +169,6 @@ int main(int argc, char** argv)
 				cout<<"there is a node!"<<endl;
 				int temp = quadtree[j].array_num;
 				quadtree[j].array_num = -3;
-				quadtree[j].mass_center = -100;
 				quadtree[j].mass_sum = -100;
 				// insert current node to next level
 				if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
@@ -177,7 +176,6 @@ int main(int argc, char** argv)
 					cout<<"insert in NW"<<endl;
 					// create the first node
 					quadtree[4*j+1].array_num = temp;
-					quadtree[4*j+1].mass_center = m[temp];
 					quadtree[4*j+1].mass_sum = m[temp];
 					quadtree[4*j+1].NW_x = x_start;
 					quadtree[4*j+1].NW_y = y_start;
@@ -213,7 +211,6 @@ int main(int argc, char** argv)
 					quadtree[4*j+1].SE_y = y_end;
 					// create the rest 3 nodes
 					quadtree[4*j+2].array_num = temp;
-					quadtree[4*j+2].mass_center = m[temp];
 					quadtree[4*j+2].mass_sum = m[temp];
 					quadtree[4*j+2].NW_x = x_start;
 					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
@@ -249,7 +246,6 @@ int main(int argc, char** argv)
 					quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 
 					quadtree[4*j+3].array_num = temp;
-					quadtree[4*j+3].mass_center = m[temp];
 					quadtree[4*j+3].mass_sum = m[temp];
 					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+3].NW_y = y_start;
@@ -285,7 +281,6 @@ int main(int argc, char** argv)
 					quadtree[4*j+3].SE_y = y_end;
 	
 					quadtree[4*j+4].array_num = temp;
-					quadtree[4*j+4].mass_center = m[temp];
 					quadtree[4*j+4].mass_sum = m[temp];
 					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
@@ -322,7 +317,6 @@ int main(int argc, char** argv)
 		if (quadtree[j].array_num == -2)
 		{
 			quadtree[j].array_num = i;
-			quadtree[j].mass_center = m[i];
 			quadtree[j].mass_sum = m[i];
 		}
 	}
@@ -331,15 +325,55 @@ int main(int argc, char** argv)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center
+			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
 			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
 		}
 	}
+
 	//update the mass_sum of from the leaf to the top
-/*	for (rit = nodes.rbegin(); rit!=nodes.rend(); ++rit)
+	for (int i=4*size-1; i>-1; i--)
 	{
-		
-	}*/
+		// if this is a internal node
+		// we need to update the mass center
+		if ((quadtree[i].array_num==-3)&&(quadtree[i].mass_sum<0))
+		{
+			//first we need to figure out whether the node is ready to compute 
+			//the mass center	
+			bool IsReady = true;
+			double temp_mass_sum = 0;
+			double temp_mass_center_x = 0;
+			double temp_mass_center_y = 0;
+			for (int j=1; j<5; j++)
+			{
+				if ((quadtree[4*i+j].array_num>-1)||(quadtree[4*i+j].array_num==-3))
+				{
+					if (quadtree[4*i+j].mass_sum==-100)
+					{
+						IsReady = false;
+					}
+				}
+			}
+			if (IsReady)
+			{
+				for (int j=1; j<5; j++)
+				{
+					if (quadtree[4*i+j].mass_sum>0)
+					{
+						temp_mass_sum = temp_mass_sum+quadtree[4*i+j].mass_sum;
+						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * x[quadtree[4*i+j].array_num];
+						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * y[quadtree[4*i+j].array_num];
+					}
+				}
+				temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
+				temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
+
+				quadtree[i].mass_sum = temp_mass_sum;
+				quadtree[i].mass_center_x = temp_mass_center_x;
+				quadtree[i].mass_center_y = temp_mass_center_y;
+			}
+			
+		}
+	}
 
 	return 0;
 
