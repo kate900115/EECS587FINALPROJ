@@ -65,6 +65,9 @@ int main(int argc, char** argv)
 	// speed
 	double vx[size];
 	double vy[size];
+
+	// 
+	body quadtree[size*4];
 	
 	map<int, body> nodes;
 	map<int, body>::iterator it;
@@ -104,18 +107,22 @@ int main(int argc, char** argv)
 	cout<<"min_x="<<min_x<<", min_y="<<min_y<<endl;
 
 	//insert each body to the tree structure
-	body first;
-	first.array_num = 0;
-	nodes[0] = first;
-/*
-	for (int i=1; i<size; i++)
+	quadtree[0].array_num = 0;
+	quadtree[0].mass_center = m[0];
+	quadtree[0].mass_sum = m[0];
+	quadtree[0].NW_x = min_x;
+	quadtree[0].NW_y = min_y;
+	quadtree[0].SE_x = max_x;
+	quadtree[0].SE_y = max_y;
+
+	for (int i=1; i<index; i++)
 	{
 		int x_start = min_x;
 		int x_end = max_x;
 		int y_start = min_y;
 		int y_end = max_y;
 		int j=0;
-		while (nodes[j].array_num!=-1)
+		while (quadtree[j].array_num!=-1)
 		{
 			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
 			{
@@ -124,196 +131,182 @@ int main(int argc, char** argv)
 				y_end=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)==NULL)
+				if (quadtree[j].array_num==-1)
 				{
 					// create the first node
-					body NewNode; 
-					NewNode.array_num = i;
-					NewNode.NW_x = x_start;
-					NewNode.NW_y = y_start;
-					NewNode.SE_x = x_end;
-					NewNode.SE_y = y_end;
-					nodes[j]=NewNode;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					// create the rest 3 nodes
-					body NewNode1;
-					NewNode1.NW_x = x_start;
-					NewNode1.NW_y = y_start;
-					NewNode1.SE_x = x_end;
-					NewNode1.SE_y = y_end;
-					nodes[j+1] = NewNode1;
-					body NewNode2;
-					NewNode2.NW_x = x_start;
-					NewNode2.NW_y = y_start;
-					NewNode2.SE_x = x_end;
-					NewNode2.SE_y = y_end;
-					nodes[j+2] = NewNode2;
-					body NewNode3;
-					NewNode3.NW_x = x_start;
-					NewNode3.NW_y = y_start;
-					NewNode3.SE_x = x_end;
-					NewNode3.SE_y = y_end;
-					nodes[j+3] = NewNode3;
-					break;
+					quadtree[j+1].array_num = -2;
+					quadtree[j+1].NW_x = x_start;
+					quadtree[j+1].NW_y = y_start;
+					quadtree[j+1].SE_x = x_end;
+					quadtree[j+1].SE_y = y_end;
 
+					quadtree[j+2].array_num = -2;
+					quadtree[j+2].NW_x = x_start;
+					quadtree[j+2].NW_y = y_start;
+					quadtree[j+2].SE_x = x_end;
+					quadtree[j+2].SE_y = y_end;
+
+					quadtree[j+3].array_num = -2;
+					quadtree[j+3].NW_x = x_start;
+					quadtree[j+3].NW_y = y_start;
+					quadtree[j+3].SE_x = x_end;
+					quadtree[j+3].SE_y = y_end;
+					break;
 				}
 				// if the node exist
 				// but have not map to a node
-				else if (nodes[j].array_num==-1)
+				else if (quadtree[j].array_num==-2)
 				{
-					nodes[j].array_num = i;
-					nodes[j].NW_x = x_start;
-					nodes[j].NW_y = y_start;
-					nodes[j].SE_x = x_end;
-					nodes[j].SE_y = y_end;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					break;
 				}
 				// if the node exist 
-				// and map to a node
+				// and have been already mapped to a node
 				// move this node to next level
 				else
 				{	
 					// if the node is the leaf
-					if (nodes.find(4*j+1)==NULL)
+					if (quadtree[4*j+1].array_num==-1)
 					{
-						int temp = nodes[j].array_num;
-						nodes[j].array_num = -1;
+						int temp = quadtree[j].array_num;
+						quadtree[j].array_num = -1;
 						
 						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
 							// put the original node here
-							body NextNode; 
-							NextNode.array_num = temp;
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
+							quadtree[4*j+1].array_num = temp;
+							quadtree[4*j+1].mass_center = m[temp];
+							quadtree[4*j+1].mass_sum = m[temp];
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 							// create the second node
-							body NextNode1; 
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.array_num = temp;
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = temp;
+							quadtree[4*j+2].mass_center = m[temp];
+							quadtree[4*j+2].mass_sum = m[temp];
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.array_num = temp;
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = temp;
+							quadtree[4*j+3].mass_center = m[temp];
+							quadtree[4*j+3].mass_sum = m[temp];
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.array_num = temp;
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = temp;
+							quadtree[4*j+4].mass_center = m[temp];
+							quadtree[4*j+4].mass_sum = m[temp];
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 					}
 				}
-				// update the x_start, x_end, y_start, y_end;
-
 			}
 			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
 			{
@@ -322,385 +315,363 @@ int main(int argc, char** argv)
 				y_start=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)==NULL)
+				if (quadtree[j].array_num==-1)
 				{
 					// create the first node
-					body NewNode; 
-					NewNode.NW_x = x_start;
-					NewNode.NW_y = y_start;
-					NewNode.SE_x = x_end;
-					NewNode.SE_y = y_end;
-					nodes[j]=NewNode;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					// create the rest 3 nodes
-					body NewNode1;
-					NewNode1.NW_x = x_start;
-					NewNode1.NW_y = y_start;
-					NewNode1.SE_x = x_end;
-					NewNode1.SE_y = y_end;
-					nodes[j-1] = NewNode1;
-					body NewNode2;
-					NewNode2.NW_x = x_start;
-					NewNode2.NW_y = y_start;
-					NewNode2.SE_x = x_end;
-					NewNode2.SE_y = y_end;
-					nodes[j+1] = NewNode2;
-					body NewNode3;
-					NewNode3.NW_x = x_start;
-					NewNode3.NW_y = y_start;
-					NewNode3.SE_x = x_end;
-					NewNode3.SE_y = y_end;
-					nodes[j+2] = NewNode3;
-					break;
+					quadtree[j-1].array_num = -2;
+					quadtree[j-1].NW_x = x_start;
+					quadtree[j-1].NW_y = y_start;
+					quadtree[j-1].SE_x = x_end;
+					quadtree[j-1].SE_y = y_end;
 
+					quadtree[j+1].array_num = -2;
+					quadtree[j+1].NW_x = x_start;
+					quadtree[j+1].NW_y = y_start;
+					quadtree[j+1].SE_x = x_end;
+					quadtree[j+1].SE_y = y_end;
+
+					quadtree[j+2].array_num = -2;
+					quadtree[j+2].NW_x = x_start;
+					quadtree[j+2].NW_y = y_start;
+					quadtree[j+2].SE_x = x_end;
+					quadtree[j+2].SE_y = y_end;
+					break;
 				}
 				// if the node exist
 				// but have not map to a node
-				else if (nodes[j].array_num==-1)
+				else if (quadtree[j].array_num==-2)
 				{
-					nodes[j].array_num = i;
-					nodes[j].NW_x = x_start;
-					nodes[j].NW_y = y_start;
-					nodes[j].SE_x = x_end;
-					nodes[j].SE_y = y_end;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					break;
 				}
 				// if the node exist 
-				// and map to a node
+				// and have been already mapped to a node
 				// move this node to next level
 				else
 				{	
 					// if the node is the leaf
-					if (nodes.find(4*j+1)==NULL)
+					if (quadtree[4*j+1].array_num==-1)
 					{
-						int temp = nodes[j].array_num;
-						nodes[j].array_num = -1;
+						int temp = quadtree[j].array_num;
+						quadtree[j].array_num = -1;
 						
 						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
 							// put the original node here
-							body NextNode; 
-							NextNode.array_num = temp;
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
+							quadtree[4*j+1].array_num = temp;
+							quadtree[4*j+1].mass_center = m[temp];
+							quadtree[4*j+1].mass_sum = m[temp];
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 							// create the second node
-							body NextNode1; 
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.array_num = temp;
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = temp;
+							quadtree[4*j+2].mass_center = m[temp];
+							quadtree[4*j+2].mass_sum = m[temp];
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.array_num = temp;
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = temp;
+							quadtree[4*j+3].mass_center = m[temp];
+							quadtree[4*j+3].mass_sum = m[temp];
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.array_num = temp;
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = temp;
+							quadtree[4*j+4].mass_center = m[temp];
+							quadtree[4*j+4].mass_sum = m[temp];
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 					}
 				}
 			}
-			else if ((x[i]>=(start_x+end_x)/2)&&(y[i]<(start_y+end_y)/2))
+			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
 			{
 				j=4*j+3;
 				x_start=(x_start+x_end)/2;
 				y_end=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)==NULL)
+				if (quadtree[j].array_num==-1)
 				{
 					// create the first node
-					body NewNode; 
-					NewNode.NW_x = x_start;
-					NewNode.NW_y = y_start;
-					NewNode.SE_x = x_end;
-					NewNode.SE_y = y_end;
-					nodes[j]=NewNode;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					// create the rest 3 nodes
-					body NewNode1;
-					NewNode1.NW_x = x_start;
-					NewNode1.NW_y = y_start;
-					NewNode1.SE_x = x_end;
-					NewNode1.SE_y = y_end;
-					nodes[j-2] = NewNode1;
-					body NewNode2;
-					NewNode2.NW_x = x_start;
-					NewNode2.NW_y = y_start;
-					NewNode2.SE_x = x_end;
-					NewNode2.SE_y = y_end;
-					nodes[j-1] = NewNode2;
-					body NewNode3;
-					NewNode3.NW_x = x_start;
-					NewNode3.NW_y = y_start;
-					NewNode3.SE_x = x_end;
-					NewNode3.SE_y = y_end;
-					nodes[j+1] = NewNode3;
-					break;
+					quadtree[j-2].array_num = -2;
+					quadtree[j-2].NW_x = x_start;
+					quadtree[j-2].NW_y = y_start;
+					quadtree[j-2].SE_x = x_end;
+					quadtree[j-2].SE_y = y_end;
 
+					quadtree[j-1].array_num = -2;
+					quadtree[j-1].NW_x = x_start;
+					quadtree[j-1].NW_y = y_start;
+					quadtree[j-1].SE_x = x_end;
+					quadtree[j-1].SE_y = y_end;
+
+					quadtree[j+1].array_num = -2;
+					quadtree[j+1].NW_x = x_start;
+					quadtree[j+1].NW_y = y_start;
+					quadtree[j+1].SE_x = x_end;
+					quadtree[j+1].SE_y = y_end;
+					break;
 				}
 				// if the node exist
 				// but have not map to a node
-				else if (nodes[j].array_num==-1)
+				else if (quadtree[j].array_num==-2)
 				{
-					nodes[j].array_num = i;
-					nodes[j].NW_x = x_start;
-					nodes[j].NW_y = y_start;
-					nodes[j].SE_x = x_end;
-					nodes[j].SE_y = y_end;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					break;
 				}
 				// if the node exist 
-				// and map to a node
+				// and have been already mapped to a node
 				// move this node to next level
 				else
 				{	
 					// if the node is the leaf
-					if (nodes.find(4*j+1)==NULL)
+					if (quadtree[4*j+1].array_num==-1)
 					{
-						int temp = nodes[j].array_num;
-						nodes[j].array_num = -1;
+						int temp = quadtree[j].array_num;
+						quadtree[j].array_num = -1;
 						
 						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
 							// put the original node here
-							body NextNode; 
-							NextNode.array_num = temp;
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
+							quadtree[4*j+1].array_num = temp;
+							quadtree[4*j+1].mass_center = m[temp];
+							quadtree[4*j+1].mass_sum = m[temp];
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 							// create the second node
-							body NextNode1; 
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.array_num = temp;
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = temp;
+							quadtree[4*j+2].mass_center = m[temp];
+							quadtree[4*j+2].mass_sum = m[temp];
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.array_num = temp;
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = temp;
+							quadtree[4*j+3].mass_center = m[temp];
+							quadtree[4*j+3].mass_sum = m[temp];
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.array_num = temp;
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = temp;
+							quadtree[4*j+4].mass_center = m[temp];
+							quadtree[4*j+4].mass_sum = m[temp];
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 					}
 				}
@@ -712,204 +683,193 @@ int main(int argc, char** argv)
 				y_start=(y_start+y_end)/2;
 				// if the nodes doesn't exist
 				// insert the new node.
-				if (nodes.find(j)==NULL)
+				if (quadtree[j].array_num==-1)
 				{
 					// create the first node
-					body NewNode; 
-					NewNode.NW_x = x_start;
-					NewNode.NW_y = y_start;
-					NewNode.SE_x = x_end;
-					NewNode.SE_y = y_end;
-					nodes[j]=NewNode;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					// create the rest 3 nodes
-					body NewNode1;
-					NewNode1.NW_x = x_start;
-					NewNode1.NW_y = y_start;
-					NewNode1.SE_x = x_end;
-					NewNode1.SE_y = y_end;
-					nodes[j-3] = NewNode1;
-					body NewNode2;
-					NewNode2.NW_x = x_start;
-					NewNode2.NW_y = y_start;
-					NewNode2.SE_x = x_end;
-					NewNode2.SE_y = y_end;
-					nodes[j-2] = NewNode2;
-					body NewNode3;
-					NewNode3.NW_x = x_start;
-					NewNode3.NW_y = y_start;
-					NewNode3.SE_x = x_end;
-					NewNode3.SE_y = y_end;
-					nodes[j-1] = NewNode3;
-					break;
+					quadtree[j-3].array_num = -2;
+					quadtree[j-3].NW_x = x_start;
+					quadtree[j-3].NW_y = y_start;
+					quadtree[j-3].SE_x = x_end;
+					quadtree[j-3].SE_y = y_end;
 
+					quadtree[j-2].array_num = -2;
+					quadtree[j-2].NW_x = x_start;
+					quadtree[j-2].NW_y = y_start;
+					quadtree[j-2].SE_x = x_end;
+					quadtree[j-2].SE_y = y_end;
+
+					quadtree[j-1].array_num = -2;
+					quadtree[j-1].NW_x = x_start;
+					quadtree[j-1].NW_y = y_start;
+					quadtree[j-1].SE_x = x_end;
+					quadtree[j-1].SE_y = y_end;
+					break;
 				}
 				// if the node exist
 				// but have not map to a node
-				else if (nodes[j].array_num==-1)
+				else if (quadtree[j].array_num==-2)
 				{
-					nodes[j].array_num = i;
-					nodes[j].NW_x = x_start;
-					nodes[j].NW_y = y_start;
-					nodes[j].SE_x = x_end;
-					nodes[j].SE_y = y_end;
+					quadtree[j].array_num = i;
+					quadtree[j].mass_center = m[i];
+					quadtree[j].mass_sum = m[i];
+					quadtree[j].NW_x = x_start;
+					quadtree[j].NW_y = y_start;
+					quadtree[j].SE_x = x_end;
+					quadtree[j].SE_y = y_end;
 					break;
 				}
 				// if the node exist 
-				// and map to a node
+				// and have been already mapped to a node
 				// move this node to next level
 				else
 				{	
 					// if the node is the leaf
-					if (nodes.find(4*j+1)==NULL)
+					if (quadtree[4*j+1].array_num==-1)
 					{
-						int temp = nodes[j].array_num;
-						nodes[j].array_num = -1;
+						int temp = quadtree[j].array_num;
+						quadtree[j].array_num = -1;
 						
 						if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
 							// put the original node here
-							body NextNode; 
-							NextNode.array_num = temp;
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
+							quadtree[4*j+1].array_num = temp;
+							quadtree[4*j+1].mass_center = m[temp];
+							quadtree[4*j+1].mass_sum = m[temp];
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 							// create the second node
-							body NextNode1; 
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = x_start;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = (x_start+x_end)/2;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.array_num = temp;
-							NextNode1.NW_x = x_start;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = (x_start+x_end)/2;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = x_start;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = temp;
+							quadtree[4*j+2].mass_center = m[temp];
+							quadtree[4*j+2].mass_sum = m[temp];
+							quadtree[4*j+2].NW_x = x_start;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = x_start;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = (x_start+x_end)/2;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = x_start;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = x_start;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = (x_start+x_end)/2;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = x_start;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 						else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = y_start;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = (y_start+y_end)/2;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = y_start;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = (y_start+y_end)/2;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = y_start;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = y_start;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = (y_start+y_end)/2;
 							// create the third node
-							body NextNode2; 
-							NextNode2.array_num = temp;
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = y_start;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = (y_start+y_end)/2;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = temp;
+							quadtree[4*j+3].mass_center = m[temp];
+							quadtree[4*j+3].mass_sum = m[temp];
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = y_start;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = (y_start+y_end)/2;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = y_start;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = (y_start+y_end)/2;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = -2;
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = y_start;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 						}
 						else
 						{
 							// create the first node
-							body NextNode; 
-							NextNode.NW_x = (x_start+x_end)/2;
-							NextNode.NW_y = (y_start+y_end)/2;
-							NextNode.SE_x = x_end;
-							NextNode.SE_y = y_end;
-							nodes[4*j+1] = NextNode;
-							// create the second node
 							// put the original node here
-							body NextNode1; 
-							NextNode1.NW_x = (x_start+x_end)/2;
-							NextNode1.NW_y = (y_start+y_end)/2;
-							NextNode1.SE_x = x_end;
-							NextNode1.SE_y = y_end;
-							nodes[4*j+2] = NextNode1;
+							quadtree[4*j+1].array_num = -2;
+							quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+1].SE_x = x_end;
+							quadtree[4*j+1].SE_y = y_end;
+							// create the second node
+							quadtree[4*j+2].array_num = -2;
+							quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+2].SE_x = x_end;
+							quadtree[4*j+2].SE_y = y_end;
 							// create the third node
-							body NextNode2; 
-							NextNode2.NW_x = (x_start+x_end)/2;
-							NextNode2.NW_y = (y_start+y_end)/2;
-							NextNode2.SE_x = x_end;
-							NextNode2.SE_y = y_end;
-							nodes[4*j+3] = NextNode2;
+							quadtree[4*j+3].array_num = -2;
+							quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+3].SE_x = x_end;
+							quadtree[4*j+3].SE_y = y_end;
 							// create the fourth node
-							body NextNode3; 
-							NextNode3.array_num = temp;
-							NextNode3.NW_x = (x_start+x_end)/2;
-							NextNode3.NW_y = (y_start+y_end)/2;
-							NextNode3.SE_x = x_end;
-							NextNode3.SE_y = y_end;
-							nodes[4*j+4] = NextNode3;
+							quadtree[4*j+4].array_num = temp;
+							quadtree[4*j+4].mass_center = m[temp];
+							quadtree[4*j+4].mass_sum = m[temp];
+							quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+							quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+							quadtree[4*j+4].SE_x = x_end;
+							quadtree[4*j+4].SE_y = y_end;
 						}
 					}
-				}
+				}	
 			}
 		}
 	}
 
 
 	//update the mass_sum of from the leaf to the top
-	for (rit = nodes.rbegin(); rit!=nodes.rend(); ++rit)
+/*	for (rit = nodes.rbegin(); rit!=nodes.rend(); ++rit)
 	{
 		
-	}
-*/
+	}*/
+
 	return 0;
 
 }
