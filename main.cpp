@@ -863,7 +863,14 @@ int main(int argc, char** argv)
 		}
 	}
 
-
+	// for test
+	for (int i=0; i<4*size; i++)
+	{
+		if (quadtree[i].array_num!=-1)
+		{
+			cout<<"cellnum = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center<<endl;
+		}
+	}
 	//update the mass_sum of from the leaf to the top
 /*	for (rit = nodes.rbegin(); rit!=nodes.rend(); ++rit)
 	{
