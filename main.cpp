@@ -178,6 +178,8 @@ int main(int argc, char** argv)
 					// create the first node
 					quadtree[4*j+1].array_num = temp;
 					quadtree[4*j+1].mass_sum = m[temp];
+					quadtree[4*j+1].mass_center_x = x[temp]; 
+					quadtree[4*j+1].mass_center_y = y[temp];
 					quadtree[4*j+1].NW_x = x_start;
 					quadtree[4*j+1].NW_y = y_start;
 					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
@@ -213,6 +215,8 @@ int main(int argc, char** argv)
 					// create the rest 3 nodes
 					quadtree[4*j+2].array_num = temp;
 					quadtree[4*j+2].mass_sum = m[temp];
+					quadtree[4*j+2].mass_center_x = x[temp]; 
+					quadtree[4*j+2].mass_center_y = y[temp];
 					quadtree[4*j+2].NW_x = x_start;
 					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
 					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
@@ -248,6 +252,8 @@ int main(int argc, char** argv)
 
 					quadtree[4*j+3].array_num = temp;
 					quadtree[4*j+3].mass_sum = m[temp];
+					quadtree[4*j+3].mass_center_x = x[temp]; 
+					quadtree[4*j+3].mass_center_y = y[temp];
 					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+3].NW_y = y_start;
 					quadtree[4*j+3].SE_x = x_end;
@@ -283,6 +289,8 @@ int main(int argc, char** argv)
 	
 					quadtree[4*j+4].array_num = temp;
 					quadtree[4*j+4].mass_sum = m[temp];
+					quadtree[4*j+4].mass_center_x = x[temp]; 
+					quadtree[4*j+4].mass_center_y = y[temp];
 					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
 					quadtree[4*j+4].SE_x = x_end;
@@ -319,6 +327,8 @@ int main(int argc, char** argv)
 		{
 			quadtree[j].array_num = i;
 			quadtree[j].mass_sum = m[i];
+			quadtree[j].mass_center_x = x[i];
+			quadtree[j].mass_center_y = y[i];
 		}
 	}
 	// for test
