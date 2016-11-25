@@ -386,7 +386,7 @@ int main(int argc, char** argv)
 		if (quadtree[i].array_num!=-1)
 		{
 			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
-			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
+			<<", mass(x,y) = ("<<quadtree[i].mass_center_x<<", "<<quadtree[i].mass_center_y<<")"<<endl;
 		}
 	}
 	cout<<endl;
