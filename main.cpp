@@ -3,13 +3,16 @@
 #include <sstream>
 #include <vector>
 #include <string>
+#include <cmath>
 #include <map>
 #include <stdlib.h>   
 
 #define size 500
+#define TreeSize 2000
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
+#define G 6.67e-11
 
 using namespace std;
 
@@ -361,7 +364,7 @@ int main(int argc, char** argv)
 	}
 	// for test the insertion of each nodes
 	cout<<"print out the insertion result:"<<endl;
-	for (int i=0; i<4*size; i++)
+	for (int i=0; i<TreeSize; i++)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
@@ -377,7 +380,7 @@ int main(int argc, char** argv)
 	}
 
 	//update the mass_sum of from the leaf to the top
-	for (int i=4*size-1; i>-1; i--)
+	for (int i=TreeSize-1; i>-1; i--)
 	{
 		// if this is a internal node
 		// we need to update the mass center
@@ -423,7 +426,7 @@ int main(int argc, char** argv)
 
 	// for test the computation result of mass center of each nodes
 	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<4*size; i++)
+	for (int i=0; i<TreeSize; i++)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
@@ -437,7 +440,26 @@ int main(int argc, char** argv)
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
-	//for (int )
+	for (int i=0; i<index; i++)
+	{
+		int TreeIdx = idx[i];
+		//traverse from the root of the quadtree
+		for (int j=0; j<TreeSize; j++)
+		{
+			if (TreeIdx!=j)
+			{
+				double s = (quadtree[j].SE_x - quadtree[j].NW_x)>(quadtree[j].SE_y - quadtree[j].NW_y)? 
+					  (quadtree[j].SE_x - quadtree[j].NW_x):(quadtree[j].SE_y - quadtree[j].NW_y);
+				// distance between the current node and the mass center of the node
+				double d = sqrt((x[i]-quadtree[j].mass_center_x)*(x[i]-quadtree[j].mass_center_x)
+					   +(y[i]-quadtree[j].mass_center_y)*(y[i]-quadtree[j].mass_center_y))
+				if (s/d>theta)
+				{
+					Fx[i] = Fx[i] + 
+				}
+			}
+		}
+	}
 
 	// update body position and velocities
 	
