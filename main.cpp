@@ -125,10 +125,10 @@ int main(int argc, char** argv)
 
 	for (int i=1; i<index; i++)
 	{
-		int x_start = min_x;
-		int x_end = max_x;
-		int y_start = min_y;
-		int y_end = max_y;
+		double x_start = min_x;
+		double x_end = max_x;
+		double y_start = min_y;
+		double y_end = max_y;
 		int j=0;
 		int test_int=0;
 		while (quadtree[j].array_num!=-2)
@@ -331,7 +331,8 @@ int main(int argc, char** argv)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center<<endl;
+			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center
+			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
 		}
 	}
 	//update the mass_sum of from the leaf to the top
