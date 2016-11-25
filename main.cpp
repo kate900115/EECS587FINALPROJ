@@ -20,7 +20,8 @@ double min_y;
 class body
 {
 	public:
-		double mass_center;
+		double mass_center_x;
+		double mass_center_y;
 		double mass_sum;
 		double array_num;
 		double NW_x;
@@ -321,6 +322,7 @@ int main(int argc, char** argv)
 		}
 	}
 	// for test
+	cout<<"print out the insertion result:"<<endl;
 	for (int i=0; i<4*size; i++)
 	{
 		if (quadtree[i].array_num!=-1)
@@ -329,6 +331,7 @@ int main(int argc, char** argv)
 			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
 		}
 	}
+	cout<<endl;
 
 	//update the mass_sum of from the leaf to the top
 	for (int i=4*size-1; i>-1; i--)
@@ -359,9 +362,10 @@ int main(int argc, char** argv)
 				{
 					if (quadtree[4*i+j].mass_sum>0)
 					{
+						int temp_index = quadtree[4*i+j].array_num;
 						temp_mass_sum = temp_mass_sum+quadtree[4*i+j].mass_sum;
-						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * x[quadtree[4*i+j].array_num];
-						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * y[quadtree[4*i+j].array_num];
+						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * x[temp_index];
+						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * y[temp_index];
 					}
 				}
 				temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
@@ -374,6 +378,18 @@ int main(int argc, char** argv)
 			
 		}
 	}
+
+	// for test
+	cout<<"print out the result of the computation of the mass center."<<endl;
+	for (int i=0; i<4*size; i++)
+	{
+		if (quadtree[i].array_num!=-1)
+		{
+			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
+			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
+		}
+	}
+	cout<<endl;
 
 	return 0;
 
