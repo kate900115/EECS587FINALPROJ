@@ -4,6 +4,7 @@
 #include <vector>
 #include <string>
 #include <map>
+#include <stdlib.h>   
 
 #define size 500
 #define MAX 10000000
