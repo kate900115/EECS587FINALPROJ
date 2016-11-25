@@ -372,10 +372,9 @@ int main(int argc, char** argv)
 				{
 					if (quadtree[4*i+j].mass_sum>0)
 					{
-						int temp_index = quadtree[4*i+j].array_num;
 						temp_mass_sum = temp_mass_sum+quadtree[4*i+j].mass_sum;
-						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * x[temp_index];
-						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * y[temp_index];
+						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * quadtree[4*i+j].mass_center_x;
+						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * quadtree[4*i+j].mass_center_y;
 					}
 				}
 				temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
