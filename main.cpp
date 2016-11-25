@@ -53,7 +53,8 @@ int main(int argc, char** argv)
 	double max_y=MIN;
 	double min_y=MAX;
 	string FileName = string(argv[1]);
-	ifstream InFile.open(FileName.c_str());
+	ifstream InFile;
+	InFile.open(FileName.c_str());
 	
 	// coordinate
 	double x[size];
@@ -99,12 +100,14 @@ int main(int argc, char** argv)
 	}
 
 	InFile.close();	
+	cout<<"max_x="<<max_x<<", max_y="<<max_y<<endl;
+	cout<<"min_x="<<min_x<<", min_y="<<min_y<<endl;
 
 	//insert each body to the tree structure
 	body first;
 	first.array_num = 0;
 	nodes[0] = first;
-
+/*
 	for (int i=1; i<size; i++)
 	{
 		int x_start = min_x;
@@ -906,7 +909,7 @@ int main(int argc, char** argv)
 	{
 		
 	}
-
+*/
 	return 0;
 
 }
