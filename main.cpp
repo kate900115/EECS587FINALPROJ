@@ -9,6 +9,7 @@
 #define size 500
 #define MAX 10000000
 #define MIN -10000000
+#define theta 0.5
 
 using namespace std;
 
@@ -20,28 +21,46 @@ double min_y;
 class body
 {
 	public:
+		// the coordinate of the mass center
 		double mass_center_x;
 		double mass_center_y;
+		// the sum of the mass of the sub node
 		double mass_sum;
+		// array index that store the data
 		double array_num;
+		// the square space 
 		double NW_x;
 		double NW_y;
 		double SE_x;
 		double SE_y;
+		// the force
+		double Fx;
+		double Fy;
 		
 		//constructor
 		//mass initialized as -100 indicate the result of the center of mass is not computed
 		//array_num initialized as -1 indicate it don't contain any body
+		//array_num = -2 indicate it contains an empty body
+		//array_num = -3 indicate it contains a body which has children
+		//array_num >=0 indicate it contains a leaf node
+		
 		body()
 		{
+			// the coordinate of the mass center
 			mass_center_x = -100; 
 			mass_center_y = -100;
+			// the sum of the mass of the sub node
 			mass_sum = -100; 
+			// array index that store the data
 			array_num = -1;
+			// the square space 
 			NW_x = min_x;
 			NW_y = max_y;
 			SE_x = max_x;
 			SE_y = min_y;
+			// the force 
+			Fx = 0;
+			Fy = 0;
 		}
 };
 
@@ -69,7 +88,10 @@ int main(int argc, char** argv)
 	double vx[size];
 	double vy[size];
 
-	// 
+	// index in quadtree
+	int idx[size];
+
+	// to store the quadtree information
 	body quadtree[size*4];
 	
 	map<int, body> nodes;
@@ -123,6 +145,7 @@ int main(int argc, char** argv)
 	quadtree[0].NW_y = min_y;
 	quadtree[0].SE_x = max_x;
 	quadtree[0].SE_y = max_y;
+	idx[0]=0;
 
 	for (int i=1; i<index; i++)
 	{
@@ -180,6 +203,7 @@ int main(int argc, char** argv)
 					quadtree[4*j+1].mass_sum = m[temp];
 					quadtree[4*j+1].mass_center_x = x[temp]; 
 					quadtree[4*j+1].mass_center_y = y[temp];
+					idx[temp] = 4*j+1;
 					quadtree[4*j+1].NW_x = x_start;
 					quadtree[4*j+1].NW_y = y_start;
 					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
@@ -217,6 +241,7 @@ int main(int argc, char** argv)
 					quadtree[4*j+2].mass_sum = m[temp];
 					quadtree[4*j+2].mass_center_x = x[temp]; 
 					quadtree[4*j+2].mass_center_y = y[temp];
+					idx[temp] = 4*j+2;
 					quadtree[4*j+2].NW_x = x_start;
 					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
 					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
@@ -254,6 +279,7 @@ int main(int argc, char** argv)
 					quadtree[4*j+3].mass_sum = m[temp];
 					quadtree[4*j+3].mass_center_x = x[temp]; 
 					quadtree[4*j+3].mass_center_y = y[temp];
+					idx[temp] = 4*j+3;
 					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+3].NW_y = y_start;
 					quadtree[4*j+3].SE_x = x_end;
@@ -291,6 +317,7 @@ int main(int argc, char** argv)
 					quadtree[4*j+4].mass_sum = m[temp];
 					quadtree[4*j+4].mass_center_x = x[temp]; 
 					quadtree[4*j+4].mass_center_y = y[temp];
+					idx[temp] = 4*j+4;
 					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
 					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
 					quadtree[4*j+4].SE_x = x_end;
@@ -329,9 +356,10 @@ int main(int argc, char** argv)
 			quadtree[j].mass_sum = m[i];
 			quadtree[j].mass_center_x = x[i];
 			quadtree[j].mass_center_y = y[i];
+			idx[i]=j;
 		}
 	}
-	// for test
+	// for test the insertion of each nodes
 	cout<<"print out the insertion result:"<<endl;
 	for (int i=0; i<4*size; i++)
 	{
@@ -342,6 +370,11 @@ int main(int argc, char** argv)
 		}
 	}
 	cout<<endl;
+	cout<<"the index array is:"<<endl;
+	for (int i=0; i<index; i++)
+	{
+		cout<<"index["<<i<<"]="<<idx[i]<<endl;
+	}
 
 	//update the mass_sum of from the leaf to the top
 	for (int i=4*size-1; i>-1; i--)
@@ -388,7 +421,7 @@ int main(int argc, char** argv)
 		}
 	}
 
-	// for test
+	// for test the computation result of mass center of each nodes
 	cout<<"print out the result of the computation of the mass center."<<endl;
 	for (int i=0; i<4*size; i++)
 	{
@@ -399,6 +432,16 @@ int main(int argc, char** argv)
 		}
 	}
 	cout<<endl;
+
+
+	// approximately sort the bodies by spacial distance
+
+	// compute forces acting on each body
+	//for (int )
+
+	// update body position and velocities
+	
+	
 
 	return 0;
 
