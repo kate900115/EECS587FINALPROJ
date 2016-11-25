@@ -104,8 +104,15 @@ int main(int argc, char** argv)
 	}
 
 	InFile.close();	
+
+	//test: print the read result
 	cout<<"max_x="<<max_x<<", max_y="<<max_y<<endl;
 	cout<<"min_x="<<min_x<<", min_y="<<min_y<<endl;
+
+	for (int i=0; i<index; i++)
+	{
+		cout<<x[i]<<", "<<y[i]<<", "<<m[i]<<", "<<vx[i]<<", "<<vy[i]<<endl;
+	} 
 
 	//insert each body to the tree structure
 	quadtree[0].array_num = 0;
@@ -123,9 +130,11 @@ int main(int argc, char** argv)
 		int y_start = min_y;
 		int y_end = max_y;
 		int j=0;
+		int test_int=0;
 		while (quadtree[j].array_num!=-2)
 		{
-			cout<<"aaaaaaaa"<<endl;
+			cout<<test_int++<<endl;
+			cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
 			// if there is a hole exist
 			if (quadtree[j].array_num == -3)
 			{
@@ -141,13 +150,13 @@ int main(int argc, char** argv)
 					x_end = (x_start+x_end)/2;
 					y_start = (y_start+y_end)/2;
 				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
 				{
 					j=4*j+3;
 					x_start = (x_start+x_end)/2;
 					y_end = (y_start+y_end)/2;
 				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
 				{
 					j=4*j+4;
 					x_start = (x_start+x_end)/2;
@@ -157,6 +166,7 @@ int main(int argc, char** argv)
 			// if there is a node exist
 			else if (quadtree[j].array_num>-1)
 			{
+				cout<<"there is a node!"<<endl;
 				int temp = quadtree[j].array_num;
 				quadtree[j].array_num = -3;
 				quadtree[j].mass_center = -100;
@@ -164,6 +174,7 @@ int main(int argc, char** argv)
 				// insert current node to next level
 				if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 				{
+					cout<<"insert in NW"<<endl;
 					// create the first node
 					quadtree[4*j+1].array_num = temp;
 					quadtree[4*j+1].mass_center = m[temp];
@@ -193,6 +204,7 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 				{
+					cout<<"insert in SW"<<endl;
 					// create the first node
 					quadtree[4*j+1].array_num = -2;
 					quadtree[4*j+1].NW_x = x_start;
@@ -222,6 +234,7 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 				{
+					cout<<"insert in NE"<<endl;
 					// create the first node
 					quadtree[4*j+1].array_num = -2;
 					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
@@ -251,6 +264,7 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 				{
+					cout<<"insert in SE"<<endl;
 					// create the first node
 					quadtree[4*j+1].array_num = -2;
 					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
@@ -291,13 +305,13 @@ int main(int argc, char** argv)
 					x_end = (x_start+x_end)/2;
 					y_start = (y_start+y_end)/2;
 				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
 				{
 					j=4*j+3;
 					x_start = (x_start+x_end)/2;
 					y_end = (y_start+y_end)/2;
 				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
 				{
 					j=4*j+4;
 					x_start = (x_start+x_end)/2;
@@ -305,7 +319,6 @@ int main(int argc, char** argv)
 				}
 			}
 		}
-		cout<<"hhhhhhhhhhhhhhhhhhh"<<endl;
 		if (quadtree[j].array_num == -2)
 		{
 			quadtree[j].array_num = i;
@@ -318,7 +331,7 @@ int main(int argc, char** argv)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
-			cout<<"cellnum = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center<<endl;
+			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_center = "<<quadtree[i].mass_center<<endl;
 		}
 	}
 	//update the mass_sum of from the leaf to the top
