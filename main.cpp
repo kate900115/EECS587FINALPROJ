@@ -1,10 +1,10 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
-#include <vector>
+//#include <vector>
 #include <string>
 #include <cmath>
-#include <map>
+//#include <map>
 #include <stdlib.h>   
 
 #define size 500
