@@ -486,24 +486,24 @@ int main(int argc, char** argv)
 	
 				if (s/d<theta)
 				{
-					int index = stack[tail-1].tree_idx;
+					int RealIdx = idx[i];
 
 					//compute the force
 					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
-					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
+					cout<<"index = "<<RealIdx<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 					
-					quadtree[index].Fx = quadtree[index].Fx + Forth_x;
-					quadtree[index].Fy = quadtree[index].Fy + Forth_y;
+					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
+					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
 					tail--;
 				}
 				else
 				{
-					int index = stack[tail-1].tree_idx;
-					stack[tail-1]=quadtree[4*index+1];
-					stack[tail]=quadtree[4*index+2];
-					stack[tail+1]=quadtree[4*index+3];
-					stack[tail+2]=quadtree[4*index+4];
+					int new_index = stack[tail-1].tree_idx;
+					stack[tail-1]=quadtree[4*new_index+1];
+					stack[tail]=quadtree[4*new_index+2];
+					stack[tail+1]=quadtree[4*new_index+3];
+					stack[tail+2]=quadtree[4*new_index+4];
 					tail=tail+3;
 				}
 			} 
@@ -513,9 +513,9 @@ int main(int argc, char** argv)
 				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
 			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
 
-				int index = stack[tail-1].tree_idx;
+				int RealIdx = idx[i];
 				
-				if (i!=quadtree[index].array_num)
+				if (i!=stack[tail-1].array_num)
 				{
 
 					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
@@ -523,8 +523,8 @@ int main(int argc, char** argv)
 
 					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 
-					quadtree[index].Fx = quadtree[index].Fx + Forth_x;
-					quadtree[index].Fy = quadtree[index].Fy + Forth_y;
+					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
+					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
 				}
 
 				tail--;
