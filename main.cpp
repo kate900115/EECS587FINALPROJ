@@ -14,6 +14,7 @@
 #define theta 0.5
 //#define G 6.67e-11
 #define G 6.67
+#define T 0.01
 
 
 using namespace std;
@@ -96,6 +97,10 @@ int main(int argc, char** argv)
 	// speed
 	double vx[size];
 	double vy[size];
+	
+	// force
+	double fx[size];
+	double fy[size];
 
 	// index in quadtree
 	int idx[size];
@@ -103,9 +108,9 @@ int main(int argc, char** argv)
 	// to store the quadtree information
 	body quadtree[size*4];
 	
-	map<int, body> nodes;
-	map<int, body>::iterator it;
-	map<int, body>::reverse_iterator rit;
+	//map<int, body> nodes;
+	//map<int, body>::iterator it;
+	//map<int, body>::reverse_iterator rit;
 	
 	string line;
 	int index = 0;
@@ -133,6 +138,8 @@ int main(int argc, char** argv)
 		vx[index] = atof(word.c_str());
 		sstr >> word;
 		vy[index] = atof(word.c_str());
+		fx[index] = 0;
+		fy[index] = 0;
 		index++;
 	}
 
@@ -495,6 +502,8 @@ int main(int argc, char** argv)
 					
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
 					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
+					fx[i] = fx[i] + Forth_x;
+					fy[i] = fy[i] + Forth_y;
 					tail--;
 				}
 				else
@@ -525,6 +534,8 @@ int main(int argc, char** argv)
 
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
 					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
+					fx[i] = fx[i] + Forth_x;
+					fy[i] = fy[i] + Forth_y;
 				}
 
 				tail--;
@@ -544,7 +555,17 @@ int main(int argc, char** argv)
 	cout<<endl;
 	
 	// update body position and velocities
-	
+	for (int i=0; i<size; i++)
+	{
+		double temp_vx = vx[i] + m[i]/fx[i] * T;
+		double temp_vy = vy[i] + m[i]/fy[i] * T;
+		double temp_x = x[i] + vx[i]*T + 0.5* m[i]/fx[i]*T*T;
+		double temp_y = y[i] + vy[i]*T + 0.5* m[i]/fy[i]*T*T;
+		vx[i]= temp_vx;
+		vy[i]= temp_vy;
+		x[i] = temp_x;
+		y[i] = temp_y;
+	}
 	
 
 	return 0;
