@@ -451,7 +451,7 @@ int main(int argc, char** argv)
 	// compute forces acting on each body
 	for (int i=0; i<index; i++)
 	{
-		int TreeIdx = idx[i];
+		//int TreeIdx = idx[i];
 		// traverse from the root of the quadtree
 		// GPU cannot use recursive
 		// so we create a stack
@@ -484,10 +484,15 @@ int main(int argc, char** argv)
 	
 				if (s/d<theta)
 				{
-					tail--;
+					int index = stack[tail-1].tree_idx;
+
 					//compute the force
+					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
+					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
 					
-	
+					quadtree[index].Fx = Forth_x;
+					quadtree[index].Fy = Forth_y;
+					tail--;
 				}
 				else
 				{
@@ -502,6 +507,16 @@ int main(int argc, char** argv)
 			else if (stack[tail-1].array_num>-1)
 			{
 				// compute the force directly
+				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
+			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
+
+				int index = stack[tail-1].tree_idx;
+
+				double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
+				double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+
+				quadtree[index].Fx = Forth_x;
+				quadtree[index].Fy = Forth_y;
 
 				tail--;
 			}
