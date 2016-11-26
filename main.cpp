@@ -460,9 +460,10 @@ int main(int argc, char** argv)
 		stack[0]=quadtree[0];
 		tail++;
 		// j is used as an index for traversing all the quadtree
-
+		int j=0;
 		while (tail!=0)
 		{
+			cout<<j++<<endl;
 			// array_num=-2 meaning that the node is a hole and have no child node
 			// delete the node
 			if (stack[tail-1].array_num==-2)
@@ -501,7 +502,7 @@ int main(int argc, char** argv)
 					stack[tail-1]=quadtree[4*index+2];
 					stack[tail]=quadtree[4*index+3];
 					stack[tail+1]=quadtree[4*index+4];
-					tail=tail+3;
+					tail=tail+2;
 				}
 			} 
 			else if (stack[tail-1].array_num>-1)
