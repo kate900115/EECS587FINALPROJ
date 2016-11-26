@@ -524,6 +524,17 @@ int main(int argc, char** argv)
 		}
 	}
 
+	// for test the computation result of mass center of each nodes
+	cout<<"print out the result of the computation of the mass center."<<endl;
+	for (int i=0; i<TreeSize; i++)
+	{
+		if (quadtree[i].array_num!=-1)
+		{
+			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", F(x,y) = ("<<quadtree[i].Fx<<", "<<quadtree[i].Fy<<")"<<endl;
+		}
+	}
+	cout<<endl;
+	
 	// update body position and velocities
 	
 	
