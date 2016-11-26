@@ -566,6 +566,12 @@ int main(int argc, char** argv)
 		x[i] = temp_x;
 		y[i] = temp_y;
 	}
+
+	// test the result of the final result
+	for (int i=0; i<index; i++)
+	{
+		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<endl;
+	}
 	
 
 	return 0;
