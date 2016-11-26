@@ -39,6 +39,8 @@ class body
 		// the force
 		double Fx;
 		double Fy;
+		//
+		int tree_idx;
 		
 		//constructor
 		//mass initialized as -100 indicate the result of the center of mass is not computed
@@ -56,6 +58,8 @@ class body
 			mass_sum = -100; 
 			// array index that store the data
 			array_num = -1;
+			// tree index
+			tree_idx = -1;
 			// the square space 
 			NW_x = min_x;
 			NW_y = max_y;
@@ -140,6 +144,11 @@ int main(int argc, char** argv)
 	{
 		cout<<x[i]<<", "<<y[i]<<", "<<m[i]<<", "<<vx[i]<<", "<<vy[i]<<endl;
 	} 
+
+	for (int i=0; i<TreeSize; i++)
+	{
+		quadtree[i].tree_idx = i;
+	}
 
 	//insert each body to the tree structure
 	quadtree[0].array_num = 0;
@@ -451,7 +460,7 @@ int main(int argc, char** argv)
 		stack[0]=quadtree[0];
 		tail++;
 		// j is used as an index for traversing all the quadtree
-		int j=0;
+
 		while (tail!=0)
 		{
 			// array_num=-2 meaning that the node is a hole and have no child node
@@ -482,18 +491,19 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					stack[tail-2]=quadtree[4*j+1];
-					stack[tail-1]=quadtree[4*j+2];
-					stack[tail]=quadtree[4*j+3];
-					stack[tail+1]=quadtree[4*j+4];
+					int index = stack[tail-1].tree_idx;
+					stack[tail-2]=quadtree[4*index+1];
+					stack[tail-1]=quadtree[4*index+2];
+					stack[tail]=quadtree[4*index+3];
+					stack[tail+1]=quadtree[4*index+4];
 					tail=tail+3;
-					
-					j=4*j+4;;
 				}
 			} 
 			else if (stack[tail-1].array_num>-1)
 			{
 				// compute the force directly
+
+				tail--;
 			}
 		}
 	}
