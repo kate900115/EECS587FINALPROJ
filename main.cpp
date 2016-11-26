@@ -12,7 +12,9 @@
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
-#define G 6.67e-11
+//#define G 6.67e-11
+#define G 6.67
+
 
 using namespace std;
 
@@ -479,6 +481,7 @@ int main(int argc, char** argv)
 				// distance between the current node and the mass center of the node
 				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
 			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
+				cout<<"i = "<<i<<", d= "<<d<<endl;
 
 	
 				if (s/d<theta)
@@ -488,9 +491,10 @@ int main(int argc, char** argv)
 					//compute the force
 					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 					
-					quadtree[index].Fx = Forth_x;
-					quadtree[index].Fy = Forth_y;
+					quadtree[index].Fx = quadtree[index].Fx + Forth_x;
+					quadtree[index].Fy = quadtree[index].Fy + Forth_y;
 					tail--;
 				}
 				else
@@ -510,12 +514,18 @@ int main(int argc, char** argv)
 			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
 
 				int index = stack[tail-1].tree_idx;
+				
+				if (i!=quadtree[index].array_num)
+				{
 
-				double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
-				double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
+					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
 
-				quadtree[index].Fx = Forth_x;
-				quadtree[index].Fy = Forth_y;
+					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
+
+					quadtree[index].Fx = quadtree[index].Fx + Forth_x;
+					quadtree[index].Fy = quadtree[index].Fy + Forth_y;
+				}
 
 				tail--;
 			}
