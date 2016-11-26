@@ -443,20 +443,57 @@ int main(int argc, char** argv)
 	for (int i=0; i<index; i++)
 	{
 		int TreeIdx = idx[i];
-		//traverse from the root of the quadtree
-		for (int j=0; j<TreeSize; j++)
+		// traverse from the root of the quadtree
+		// GPU cannot use recursive
+		// so we create a stack
+		body stack[TreeSize];
+		int tail=0;
+		stack[0]=quadtree[0];
+		tail++;
+		// j is used as an index for traversing all the quadtree
+		int j=0;
+		while (tail!=0)
 		{
-			if (TreeIdx!=j)
+			// array_num=-2 meaning that the node is a hole and have no child node
+			// delete the node
+			if (stack[tail-1].array_num==-2)
 			{
-				double s = (quadtree[j].SE_x - quadtree[j].NW_x)>(quadtree[j].SE_y - quadtree[j].NW_y)? 
-					  (quadtree[j].SE_x - quadtree[j].NW_x):(quadtree[j].SE_y - quadtree[j].NW_y);
+				tail--;
+			}
+
+			// array_num=-3 meaning that the node have child nodes
+			// put all the child node into stack
+			else if (stack[tail-1].array_num==-3)
+			{
+				double s = (stack[tail-1].SE_x - stack[tail-1].NW_x)>(stack[tail-1].SE_y - stack[tail-1].NW_y)? 
+			    	           (stack[tail-1].SE_x - stack[tail-1].NW_x):(stack[tail-1].SE_y - stack[tail-1].NW_y);
+			
 				// distance between the current node and the mass center of the node
-				double d = sqrt((x[i]-quadtree[j].mass_center_x)*(x[i]-quadtree[j].mass_center_x)
-					   +(y[i]-quadtree[j].mass_center_y)*(y[i]-quadtree[j].mass_center_y))
-				if (s/d>theta)
+				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
+			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
+
+	
+				if (s/d<theta)
 				{
-					Fx[i] = Fx[i] + 
+					tail--;
+					//compute the force
+					
+	
 				}
+				else
+				{
+					stack[tail-2]=quadtree[4*j+1];
+					stack[tail-1]=quadtree[4*j+2];
+					stack[tail]=quadtree[4*j+3];
+					stack[tail+1]=quadtree[4*j+4];
+					tail=tail+3;
+					
+					j=4*j+4;;
+				}
+			} 
+			else if (stack[tail-1].array_num>-1)
+			{
+				// compute the force directly
 			}
 		}
 	}
