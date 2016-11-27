@@ -95,208 +95,203 @@ __global__ void ConstructQuadtree()
 	quadtree[0].SE_y = max_y;
 	idx[0]=0;
 
-	for (int i=1; i<index; i++)
-	{
-		double x_start = min_x;
-		double x_end = max_x;
-		double y_start = min_y;
-		double y_end = max_y;
-		int j=0;
-		int test_int=0;
-		while (quadtree[j].array_num!=-2)
-		{
-			cout<<test_int++<<endl;
-			cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
-			// if there is a hole exist
-			if (quadtree[j].array_num == -3)
-			{
-				if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-				{
-					j=4*j+1;
-					x_end = (x_start+x_end)/2;
-					y_end = (y_start+y_end)/2;
-				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-				{
-					j=4*j+2;
-					x_end = (x_start+x_end)/2;
-					y_start = (y_start+y_end)/2;
-				}
-				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-				{
-					j=4*j+3;
-					x_start = (x_start+x_end)/2;
-					y_end = (y_start+y_end)/2;
-				}
-				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-				{
-					j=4*j+4;
-					x_start = (x_start+x_end)/2;
-					y_start = (y_start+y_end)/2;
-				}
-			}
-			// if there is a node exist
-			else if (quadtree[j].array_num>-1)
-			{
-				cout<<"there is a node!"<<endl;
-				int temp = quadtree[j].array_num;
-				quadtree[j].array_num = -3;
-				quadtree[j].mass_sum = -100;
-				// insert current node to next level
-				if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
-				{
-					cout<<"insert in NW"<<endl;
-					// create the first node
-					quadtree[4*j+1].array_num = temp;
-					quadtree[4*j+1].mass_sum = m[temp];
-					quadtree[4*j+1].mass_center_x = x[temp]; 
-					quadtree[4*j+1].mass_center_y = y[temp];
-					idx[temp] = 4*j+1;
-					quadtree[4*j+1].NW_x = x_start;
-					quadtree[4*j+1].NW_y = y_start;
-					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+1].SE_y = (y_start+y_end)/2;
-					// create the rest 3 nodes
-					quadtree[4*j+2].array_num = -2;
-					quadtree[4*j+2].NW_x = x_start;
-					quadtree[4*j+2].NW_y = y_start;
-					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+2].SE_y = (y_start+y_end)/2;
-				
-					quadtree[4*j+3].array_num = -2;
-					quadtree[4*j+3].NW_x = x_start;
-					quadtree[4*j+3].NW_y = y_start;
-					quadtree[4*j+3].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+3].SE_y = (y_start+y_end)/2;
-	
-					quadtree[4*j+4].array_num = -2;
-					quadtree[4*j+4].NW_x = x_start;
-					quadtree[4*j+4].NW_y = y_start;
-					quadtree[4*j+4].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+4].SE_y = (y_start+y_end)/2;
-				}
-				else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
-				{
-					cout<<"insert in SW"<<endl;
-					// create the first node
-					quadtree[4*j+1].array_num = -2;
-					quadtree[4*j+1].NW_x = x_start;
-					quadtree[4*j+1].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+1].SE_y = y_end;
-					// create the rest 3 nodes
-					quadtree[4*j+2].array_num = temp;
-					quadtree[4*j+2].mass_sum = m[temp];
-					quadtree[4*j+2].mass_center_x = x[temp]; 
-					quadtree[4*j+2].mass_center_y = y[temp];
-					idx[temp] = 4*j+2;
-					quadtree[4*j+2].NW_x = x_start;
-					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+2].SE_y = y_end;
-				
-					quadtree[4*j+3].array_num = -2;
-					quadtree[4*j+3].NW_x = x_start;
-					quadtree[4*j+3].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+3].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+3].SE_y = y_end;
-	
-					quadtree[4*j+4].array_num = -2;
-					quadtree[4*j+4].NW_x = x_start;
-					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+4].SE_x = (x_start+x_end)/2;
-					quadtree[4*j+4].SE_y = y_end;
-				}
-				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
-				{
-					cout<<"insert in NE"<<endl;
-					// create the first node
-					quadtree[4*j+1].array_num = -2;
-					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+1].NW_y = y_start;
-					quadtree[4*j+1].SE_x = x_end;
-					quadtree[4*j+1].SE_y = (y_start+y_end)/2;
-					// create the rest 3 nodes
-					quadtree[4*j+2].array_num = -2;
-					quadtree[4*j+2].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+2].NW_y = y_start;
-					quadtree[4*j+2].SE_x = x_end;
-					quadtree[4*j+2].SE_y = (y_start+y_end)/2;
+	int i = blockIdx.x*blockDim.x + threadIdx.x;
 
-					quadtree[4*j+3].array_num = temp;
-					quadtree[4*j+3].mass_sum = m[temp];
-					quadtree[4*j+3].mass_center_x = x[temp]; 
-					quadtree[4*j+3].mass_center_y = y[temp];
-					idx[temp] = 4*j+3;
-					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+3].NW_y = y_start;
-					quadtree[4*j+3].SE_x = x_end;
-					quadtree[4*j+3].SE_y = (y_start+y_end)/2;
-	
-					quadtree[4*j+4].array_num = -2;
-					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+4].NW_y = y_start;
-					quadtree[4*j+4].SE_x = x_end;
-					quadtree[4*j+4].SE_y = (y_start+y_end)/2;
-				}
-				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
-				{
-					cout<<"insert in SE"<<endl;
-					// create the first node
-					quadtree[4*j+1].array_num = -2;
-					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+1].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+1].SE_x = x_end;
-					quadtree[4*j+1].SE_y = y_end;
-					// create the rest 3 nodes
-					quadtree[4*j+2].array_num = -2;
-					quadtree[4*j+2].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+2].SE_x = x_end;
-					quadtree[4*j+2].SE_y = y_end;
-				
-					quadtree[4*j+3].array_num = -2;
-					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+3].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+3].SE_x = x_end;
-					quadtree[4*j+3].SE_y = y_end;
-	
-					quadtree[4*j+4].array_num = temp;
-					quadtree[4*j+4].mass_sum = m[temp];
-					quadtree[4*j+4].mass_center_x = x[temp]; 
-					quadtree[4*j+4].mass_center_y = y[temp];
-					idx[temp] = 4*j+4;
-					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
-					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
-					quadtree[4*j+4].SE_x = x_end;
-					quadtree[4*j+4].SE_y = y_end;
-				}
-			
-				if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-				{
-					j=4*j+1;
-					x_end = (x_start+x_end)/2;
-					y_end = (y_start+y_end)/2;
-				}
-				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-				{
-					j=4*j+2;
-					x_end = (x_start+x_end)/2;
-					y_start = (y_start+y_end)/2;
-				}
-				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-				{
-					j=4*j+3;
-					x_start = (x_start+x_end)/2;
-					y_end = (y_start+y_end)/2;
-				}
-				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-				{
-					j=4*j+4;
-					x_start = (x_start+x_end)/2;
-					y_start = (y_start+y_end)/2;
-				}
+	double x_start = min_x;
+	double x_end = max_x;
+	double y_start = min_y;
+	double y_end = max_y;
+	int j=0;
+	int test_int=0;
+	while (quadtree[j].array_num!=-2)
+	{
+		cout<<test_int++<<endl;
+		cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
+		// if there is a hole exist
+		if (quadtree[j].array_num == -3)
+		{
+			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+			{
+				j=4*j+1;
+				x_end = (x_start+x_end)/2;
+				y_end = (y_start+y_end)/2;
 			}
+			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+			{
+				j=4*j+2;
+				x_end = (x_start+x_end)/2;
+				y_start = (y_start+y_end)/2;
+			}
+			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+			{
+				j=4*j+3;
+				x_start = (x_start+x_end)/2;
+				y_end = (y_start+y_end)/2;
+			}
+			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+			{
+				j=4*j+4;
+				x_start = (x_start+x_end)/2;
+				y_start = (y_start+y_end)/2;
+			}
+		}
+		// if there is a node exist
+		else if (quadtree[j].array_num>-1)
+		{
+			int temp = quadtree[j].array_num;
+			quadtree[j].array_num = -3;
+			quadtree[j].mass_sum = -100;
+			// insert current node to next level
+			if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+			{
+				// create the first node
+				quadtree[4*j+1].array_num = temp;
+				quadtree[4*j+1].mass_sum = m[temp];
+				quadtree[4*j+1].mass_center_x = x[temp]; 
+				quadtree[4*j+1].mass_center_y = y[temp];
+				idx[temp] = 4*j+1;
+				quadtree[4*j+1].NW_x = x_start;
+				quadtree[4*j+1].NW_y = y_start;
+				quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+				// create the rest 3 nodes
+				quadtree[4*j+2].array_num = -2;
+				quadtree[4*j+2].NW_x = x_start;
+				quadtree[4*j+2].NW_y = y_start;
+				quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+2].SE_y = (y_start+y_end)/2;
+			
+				quadtree[4*j+3].array_num = -2;
+				quadtree[4*j+3].NW_x = x_start;
+				quadtree[4*j+3].NW_y = y_start;
+				quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+3].SE_y = (y_start+y_end)/2;
+
+				quadtree[4*j+4].array_num = -2;
+				quadtree[4*j+4].NW_x = x_start;
+				quadtree[4*j+4].NW_y = y_start;
+				quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+4].SE_y = (y_start+y_end)/2;
+			}
+			else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
+			{
+				// create the first node
+				quadtree[4*j+1].array_num = -2;
+				quadtree[4*j+1].NW_x = x_start;
+				quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+1].SE_y = y_end;
+				// create the rest 3 nodes
+				quadtree[4*j+2].array_num = temp;
+				quadtree[4*j+2].mass_sum = m[temp];
+				quadtree[4*j+2].mass_center_x = x[temp]; 
+				quadtree[4*j+2].mass_center_y = y[temp];
+				idx[temp] = 4*j+2;
+				quadtree[4*j+2].NW_x = x_start;
+				quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+2].SE_y = y_end;
+				
+				quadtree[4*j+3].array_num = -2;
+				quadtree[4*j+3].NW_x = x_start;
+				quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+3].SE_y = y_end;
+	
+				quadtree[4*j+4].array_num = -2;
+				quadtree[4*j+4].NW_x = x_start;
+				quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+				quadtree[4*j+4].SE_y = y_end;
+			}
+			else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
+			{
+				// create the first node
+				quadtree[4*j+1].array_num = -2;
+				quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+1].NW_y = y_start;
+				quadtree[4*j+1].SE_x = x_end;
+				quadtree[4*j+1].SE_y = (y_start+y_end)/2;
+				// create the rest 3 nodes
+				quadtree[4*j+2].array_num = -2;
+				quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+2].NW_y = y_start;
+				quadtree[4*j+2].SE_x = x_end;
+				quadtree[4*j+2].SE_y = (y_start+y_end)/2;
+
+				quadtree[4*j+3].array_num = temp;
+				quadtree[4*j+3].mass_sum = m[temp];
+				quadtree[4*j+3].mass_center_x = x[temp]; 
+				quadtree[4*j+3].mass_center_y = y[temp];
+				idx[temp] = 4*j+3;
+				quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+3].NW_y = y_start;
+				quadtree[4*j+3].SE_x = x_end;
+				quadtree[4*j+3].SE_y = (y_start+y_end)/2;
+	
+				quadtree[4*j+4].array_num = -2;
+				quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+4].NW_y = y_start;
+				quadtree[4*j+4].SE_x = x_end;
+				quadtree[4*j+4].SE_y = (y_start+y_end)/2;
+			}
+			else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
+			{
+				// create the first node
+				quadtree[4*j+1].array_num = -2;
+				quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+1].SE_x = x_end;
+				quadtree[4*j+1].SE_y = y_end;
+				// create the rest 3 nodes
+				quadtree[4*j+2].array_num = -2;
+				quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+2].SE_x = x_end;
+				quadtree[4*j+2].SE_y = y_end;
+				
+				quadtree[4*j+3].array_num = -2;
+				quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+3].SE_x = x_end;
+				quadtree[4*j+3].SE_y = y_end;
+	
+				quadtree[4*j+4].array_num = temp;
+				quadtree[4*j+4].mass_sum = m[temp];
+				quadtree[4*j+4].mass_center_x = x[temp]; 
+				quadtree[4*j+4].mass_center_y = y[temp];
+				idx[temp] = 4*j+4;
+				quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+				quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+				quadtree[4*j+4].SE_x = x_end;
+				quadtree[4*j+4].SE_y = y_end;
+			}
+			
+			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+			{
+				j=4*j+1;
+				x_end = (x_start+x_end)/2;
+				y_end = (y_start+y_end)/2;
+			}
+			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+			{
+				j=4*j+2;
+				x_end = (x_start+x_end)/2;
+				y_start = (y_start+y_end)/2;
+			}
+			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+			{
+				j=4*j+3;
+				x_start = (x_start+x_end)/2;
+				y_end = (y_start+y_end)/2;
+			}
+			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+			{
+				j=4*j+4;
+				x_start = (x_start+x_end)/2;
+				y_start = (y_start+y_end)/2;
+			}
+			
 		}
 		if (quadtree[j].array_num == -2)
 		{
@@ -358,113 +353,106 @@ __global__ void UpdateMass()
 }
 
 
-__global__ UpdateSpeed()
-{
-	// update body position and velocities
-	for (int i=0; i<size; i++)
-	{
-		double temp_vx = vx[i] + m[i]/fx[i] * T;
-		double temp_vy = vy[i] + m[i]/fy[i] * T;
-		double temp_x = x[i] + vx[i]*T + 0.5* m[i]/fx[i]*T*T;
-		double temp_y = y[i] + vy[i]*T + 0.5* m[i]/fy[i]*T*T;
-		vx[i]= temp_vx;
-		vy[i]= temp_vy;
-		x[i] = temp_x;
-		y[i] = temp_y;
-	}
-}
 
 
 __global__ ComputeForce()
 {
 	// compute forces acting on each body
-	for (int i=0; i<index; i++)
+	int i=blockIdx.x * blockDim.x + threadIdx.x;
+
+	//int TreeIdx = idx[i];
+	// traverse from the root of the quadtree
+	// GPU cannot use recursive
+	// so we create a stack
+	body stack[TreeSize];
+	int tail=0;
+	stack[0]=quadtree[0];
+	tail++;
+
+	while (tail!=0)
 	{
-		//int TreeIdx = idx[i];
-		// traverse from the root of the quadtree
-		// GPU cannot use recursive
-		// so we create a stack
-		body stack[TreeSize];
-		int tail=0;
-		stack[0]=quadtree[0];
-		tail++;
-
-		while (tail!=0)
+		// array_num=-2 meaning that the node is a hole and have no child node
+		// delete the node
+		if (stack[tail-1].array_num==-2)
 		{
-			// array_num=-2 meaning that the node is a hole and have no child node
-			// delete the node
-			if (stack[tail-1].array_num==-2)
-			{
-				tail--;
-			}
-
-			// array_num=-3 meaning that the node have child nodes
-			// put all the child node into stack
-			else if (stack[tail-1].array_num==-3)
-			{
-				double s = (stack[tail-1].SE_x - stack[tail-1].NW_x)>(stack[tail-1].SE_y - stack[tail-1].NW_y)? 
-			    	           (stack[tail-1].SE_x - stack[tail-1].NW_x):(stack[tail-1].SE_y - stack[tail-1].NW_y);
-			
-				// distance between the current node and the mass center of the node
-				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
-			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
-				cout<<"i = "<<i<<", d= "<<d<<endl;
-
+			tail--;
+		}
+		// array_num=-3 meaning that the node have child nodes
+		// put all the child node into stack
+		else if (stack[tail-1].array_num==-3)
+		{
+			double s = (stack[tail-1].SE_x - stack[tail-1].NW_x)>(stack[tail-1].SE_y - stack[tail-1].NW_y)? 
+		    	           (stack[tail-1].SE_x - stack[tail-1].NW_x):(stack[tail-1].SE_y - stack[tail-1].NW_y);
+		
+			// distance between the current node and the mass center of the node
+			double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
+		 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
+			cout<<"i = "<<i<<", d= "<<d<<endl;
 	
-				if (s/d<theta)
-				{
-					int RealIdx = idx[i];
-
-					//compute the force
-					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
-					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
-					cout<<"index = "<<RealIdx<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
-					
-					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
-					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
-					fx[i] = fx[i] + Forth_x;
-					fy[i] = fy[i] + Forth_y;
-					tail--;
-				}
-				else
-				{
-					int new_index = stack[tail-1].tree_idx;
-					stack[tail-1]=quadtree[4*new_index+1];
-					stack[tail]=quadtree[4*new_index+2];
-					stack[tail+1]=quadtree[4*new_index+3];
-					stack[tail+2]=quadtree[4*new_index+4];
-					tail=tail+3;
-				}
-			} 
-			else if (stack[tail-1].array_num>-1)
+			if (s/d<theta)
 			{
-				// compute the force directly
-				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
-			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
-
 				int RealIdx = idx[i];
+
+				//compute the force
+				double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
+				double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+				cout<<"index = "<<RealIdx<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 				
-				if (i!=stack[tail-1].array_num)
-				{
-
-					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
-					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
-
-					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
-
-					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
-					quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
-					fx[i] = fx[i] + Forth_x;
-					fy[i] = fy[i] + Forth_y;
-				}
-
+				quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
+				quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
+				fx[i] = fx[i] + Forth_x;
+				fy[i] = fy[i] + Forth_y;
 				tail--;
 			}
+			else
+			{
+				int new_index = stack[tail-1].tree_idx;
+				stack[tail-1]=quadtree[4*new_index+1];
+				stack[tail]=quadtree[4*new_index+2];
+				stack[tail+1]=quadtree[4*new_index+3];
+				stack[tail+2]=quadtree[4*new_index+4];
+				tail=tail+3;
+			}
+		} 
+		else if (stack[tail-1].array_num>-1)
+		{
+			// compute the force directly
+			double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
+		 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
+
+			int RealIdx = idx[i];
+				
+			if (i!=stack[tail-1].array_num)
+			{
+				double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
+				double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+
+				quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
+				quadtree[RealIdx].Fy = quadtree[RealIdx].Fy + Forth_y;
+				fx[i] = fx[i] + Forth_x;
+				fy[i] = fy[i] + Forth_y;
+			}
+
+			tail--;
 		}
 	}
 }
 
 
+__global__ UpdateSpeed()
+{
+	// update body position and velocities
+	int i=blockIdx.x * blockDim.x + threadIdx.x;
+	
+	double temp_vx = vx[i] + m[i]/fx[i] * T;
+	double temp_vy = vy[i] + m[i]/fy[i] * T;
+	double temp_x = x[i] + vx[i]*T + 0.5* m[i]/fx[i]*T*T;
+	double temp_y = y[i] + vy[i]*T + 0.5* m[i]/fy[i]*T*T;
+	vx[i]= temp_vx;
+	vy[i]= temp_vy;
+	x[i] = temp_x;
+	y[i] = temp_y;
+}
 
 
 int main(int argc, char** argv)
@@ -519,12 +507,8 @@ int main(int argc, char** argv)
 		sstr << line;
 		sstr >> word;
 		x[index] = atof(word.c_str());
-		max_x = x[index]>max_x? x[index]:max_x;
-		min_x = x[index]<min_x? x[index]:min_x;
 		sstr >> word;
 		y[index] = atof(word.c_str());
-		max_y = y[index]>max_y? y[index]:max_y;
-		min_y = y[index]<min_y? y[index]:min_y;
 		sstr >> word;
 		m[index] = atof(word.c_str());
 		sstr >> word;
