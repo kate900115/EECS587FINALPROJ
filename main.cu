@@ -519,7 +519,7 @@ int main(int argc, char** argv)
 	cudaMemcpy(d_fy, fy, size*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_idx, idx, size*sizeof(int), cudaMemcpyHostToDevice);
 
-	FindEdge<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	FindEdge<<<(N+255)/256, 256>>>(d_x, d_y);
 
 	for (int i=0; i<TreeSize; i++)
 	{
@@ -535,7 +535,6 @@ int main(int argc, char** argv)
 	quadtree[0].SE_y = max_y;
 	d_idx[0]=0;
 
-	FindEdge<<<(N+255)/256, 256>>>(d_x, d_y);
 	ConstructQuadtree<<<(N+255)/256, 256>>>(d_x, d_y, d_m, d_idx);
 	UpdateMass<<<(N+255)/256, 256>>>();
 	ComputeForce()<<<(N+255)/256, 256>>>(d_x, d_y, d_m, d_idx, d_fx, d_fy);
