@@ -3,7 +3,9 @@
 #include <sstream>
 #include <string>
 #include <cmath>
-#include <stdlib.h>   
+#include <stdlib.h> 
+#include <cuda.h>
+#include <cuda_runtime.h>  
 
 #define size 500
 #define TreeSize 2000
@@ -16,10 +18,10 @@
 
 using namespace std;
 
-double max_x;
-double min_x;
-double max_y;
-double min_y;
+__device__ double max_x = MIN;
+__device__ double min_x = MAX;
+__device__ double max_y = MIN;
+__device__ double min_y = MAX;
 
 class body
 {
@@ -49,7 +51,7 @@ class body
 		//array_num = -3 indicate it contains a body which has children
 		//array_num >=0 indicate it contains a leaf node
 		
-		__device__ __host__ body()
+		__device__ body()
 		{
 			// the coordinate of the mass center
 			mass_center_x = -100; 
@@ -69,17 +71,54 @@ class body
 			Fx = 0;
 			Fy = 0;
 		}
-		
-		__device__ __host__ ~body(){};
+
+};
+
+
+struct Lock
+{
+	int *mutex;
+	//construnctor
+	Lock()
+	{
+		int state = 0;
+		cudaMalloc((void**)&mutex, sizeof(int));
+		cudaMemcpy(mutex, &state, sizeof(int), cudaMemcpyHostToDevice);
+	}
+
+	~Lock()
+	{
+		cudaFree(mutex);
+	}
+
+	__device__ void lock()
+	{
+		//0xFFFFFFFF is just a very large number. 
+		//The point is no block index can be this big (currently).
+		while(atomicCAS(mutex, 0, 1)!= 0);    
+	}
+	
+	__device__ void unlock()
+	{
+		atomicExch(mutex, 0);
+	}
 };
 
 
 __global__ 
-void FindEdge(double* x, double* y)
+void FindEdge(Lock lock1, double* x, double* y)
 {
-
+	int i = blockIdx.x*blockDim.x+threadIdx.x;
+	
+	lock1.lock();
+	max_x = x[i]>max_x?x[i]:max_x;
+	min_x = x[i]<min_x?x[i]:min_x;
+	max_y = y[i]>max_y?y[i]:max_y;
+	min_x = y[i]<min_y?y[i]:min_y;
+	lock1.unlock();
+	
 }
-
+/*
 __global__ 
 void ConstructQuadtree(double* x, double* y, double* m, int* idx)
 {
@@ -443,7 +482,7 @@ void UpdateSpeed(double* vx, double* vy, double* x, double* y, double* m, double
 	vy[i]= temp_vy;
 	x[i] = temp_x;
 	y[i] = temp_y;
-}
+}*/
 
 
 int main(int argc, char** argv)
@@ -454,12 +493,15 @@ int main(int argc, char** argv)
 	double min_x=MAX;
 	double max_y=MIN;
 	double min_y=MAX;
+
+	Lock UpdataMaxMin;
 	string FileName = string(argv[1]);
 	ifstream InFile;
 	InFile.open(FileName.c_str());
 	
 	double *x, *y, *m, *vx, *vy, *fx, *fy;
 	int *idx;
+	body* quadtree;
 	x = (double*)malloc(size*sizeof(double));
 	y = (double*)malloc(size*sizeof(double));
 	m = (double*)malloc(size*sizeof(double));
@@ -468,9 +510,11 @@ int main(int argc, char** argv)
 	fx = (double*)malloc(size*sizeof(double));
 	fy = (double*)malloc(size*sizeof(double));
 	idx = (int*)malloc(size*sizeof(int));
+	quadtree = (body*)malloc(TreeSize*sizeof(body));
 
 	double *d_x, *d_y, *d_m, *d_vx, *d_vy, *d_fx, *d_fy;
 	int *d_idx;
+	body* d_quadtree;
 	cudaMalloc(&d_x, size*sizeof(double));
 	cudaMalloc(&d_y, size*sizeof(double));
 	cudaMalloc(&d_m, size*sizeof(double));
@@ -479,10 +523,10 @@ int main(int argc, char** argv)
 	cudaMalloc(&d_fx, size*sizeof(double));
 	cudaMalloc(&d_fy, size*sizeof(double));
 	cudaMalloc(&d_idx, size*sizeof(int));
+	cudaMalloc(&d_quadtree, TreeSize*sizeof(body));
 
 	
-	// to store the quadtree information
-	__device__ body quadtree[size*4];
+
 	
 	string line;
 	int index = 0;
@@ -519,8 +563,18 @@ int main(int argc, char** argv)
 	cudaMemcpy(d_fy, fy, size*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_idx, idx, size*sizeof(int), cudaMemcpyHostToDevice);
 
-	FindEdge<<<(N+255)/256, 256>>>(d_x, d_y);
 
+	// start to record time
+	float elapsedTime;
+	cudaEvent_t start, stop;
+	cudaEventCreate (&start);
+	cudaEventCreate (&stop);
+	cudaEventRecord (start, 0);
+
+	Lock UpdateMaxMin;
+
+	FindEdge<<<size/256, 256>>>(UpdateMaxMin,d_x, d_y);
+/*
 	for (int i=0; i<TreeSize; i++)
 	{
 		quadtree[i].tree_idx = i;
@@ -535,10 +589,20 @@ int main(int argc, char** argv)
 	quadtree[0].SE_y = max_y;
 	d_idx[0]=0;
 
-	ConstructQuadtree<<<(N+255)/256, 256>>>(d_x, d_y, d_m, d_idx);
-	UpdateMass<<<(N+255)/256, 256>>>();
-	ComputeForce()<<<(N+255)/256, 256>>>(d_x, d_y, d_m, d_idx, d_fx, d_fy);
-	UpdateSpeed()<<<(N+255)/256, 256>>>(d_vx, d_vy, d_x, d_y, d_m, d_fx, d_fy);
+	ConstructQuadtree<<<size/256, 256>>>(d_x, d_y, d_m, d_idx);
+	UpdateMass<<<size/256, 256>>>();
+	ComputeForce()<<<size/256, 256>>>(d_x, d_y, d_m, d_idx, d_fx, d_fy);
+	UpdateSpeed()<<<size/256, 256>>>(d_vx, d_vy, d_x, d_y, d_m, d_fx, d_fy);
+*/
+	// get the relapsed time
+
+	cudaEventRecord(stop,0);
+	cudaEventSynchronize(stop);
+	cudaEventElapsedTime(&elapsedTime, start, stop);
+	cudaEventDestroy(start);
+	cudaEventDestroy(stop);
+
+	cout<<"Elapsed time = "<<elapsedTime<<endl;
 
 	cudaMemcpy(x, d_x, size*sizeof(double), cudaMemcpyDeviceToHost);
 	cudaMemcpy(y, d_y, size*sizeof(double), cudaMemcpyDeviceToHost);
