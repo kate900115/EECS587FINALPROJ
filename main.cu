@@ -74,96 +74,13 @@ class body
 };
 
 
-
-int main(int argc, char** argv)
+__global__ void FindEdge()
 {
-	// the max coordinate and the minimum coordinate of 
-	// the 2D-space
-	double max_x=MIN;
-	double min_x=MAX;
-	double max_y=MIN;
-	double min_y=MAX;
-	string FileName = string(argv[1]);
-	ifstream InFile;
-	InFile.open(FileName.c_str());
-	
-	double *x, *y, *m, *vx, *vy, *fx, *fy;
-	int *idx;
-	x = (double*)malloc(size*sizeof(double));
-	y = (double*)malloc(size*sizeof(double));
-	m = (double*)malloc(size*sizeof(double));
-	vx = (double*)malloc(size*sizeof(double));
-	vy = (double*)malloc(size*sizeof(double));
-	fx = (double*)malloc(size*sizeof(double));
-	fy = (double*)malloc(size*sizeof(double));
-	idx = (int*)malloc(size*sizeof(int));
 
-	double *d_x, *d_y, *d_m, *d_vx, *d_vy, *d_fx, *d_fy;
-	int *d_idx;
-	cudaMalloc(&d_x, size*sizeof(double));
-	cudaMalloc(&d_y, size*sizeof(double));
-	cudaMalloc(&d_m, size*sizeof(double));
-	cudaMalloc(&d_vx, size*sizeof(double));
-	cudaMalloc(&d_vy, size*sizeof(double));
-	cudaMalloc(&d_fx, size*sizeof(double));
-	cudaMalloc(&d_fy, size*sizeof(double));
-	cudaMalloc(&d_idx, size*sizeof(int));
+}
 
-	
-	// to store the quadtree information
-	body quadtree[size*4];
-	
-	string line;
-	int index = 0;
-
-	
-	
-	//read the input file
-	//find the max_x, max_y, min_x, min_y
-	while (getline(InFile, line))
-	{
-		stringstream sstr;
-		string word;
-		sstr << line;
-		sstr >> word;
-		x[index] = atof(word.c_str());
-		max_x = x[index]>max_x? x[index]:max_x;
-		min_x = x[index]<min_x? x[index]:min_x;
-		sstr >> word;
-		y[index] = atof(word.c_str());
-		max_y = y[index]>max_y? y[index]:max_y;
-		min_y = y[index]<min_y? y[index]:min_y;
-		sstr >> word;
-		m[index] = atof(word.c_str());
-		sstr >> word;
-		vx[index] = atof(word.c_str());
-		sstr >> word;
-		vy[index] = atof(word.c_str());
-		fx[index] = 0;
-		fy[index] = 0;
-		index++;
-	}
-
-	InFile.close();	
-
-	cudaMemcpy(d_x, x, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_y, y, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_m, m, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_vx, vx, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_vy, vy, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_fx, fx, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_fy, fy, size*sizeof(double), cudaMemcpyHostToDevice);
-	cudaMemcpy(d_idx, idx, size*sizeof(int), cudaMemcpyHostToDevice);
-
-	//test: print the read result
-	cout<<"max_x="<<max_x<<", max_y="<<max_y<<endl;
-	cout<<"min_x="<<min_x<<", min_y="<<min_y<<endl;
-
-	for (int i=0; i<index; i++)
-	{
-		cout<<x[i]<<", "<<y[i]<<", "<<m[i]<<", "<<vx[i]<<", "<<vy[i]<<endl;
-	} 
-
+__global__ void ConstructQuadtree()
+{
 	for (int i=0; i<TreeSize; i++)
 	{
 		quadtree[i].tree_idx = i;
@@ -390,23 +307,11 @@ int main(int argc, char** argv)
 			idx[i]=j;
 		}
 	}
-	// for test the insertion of each nodes
-	cout<<"print out the insertion result:"<<endl;
-	for (int i=0; i<TreeSize; i++)
-	{
-		if (quadtree[i].array_num!=-1)
-		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
-			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<endl;
-		}
-	}
-	cout<<endl;
-	cout<<"the index array is:"<<endl;
-	for (int i=0; i<index; i++)
-	{
-		cout<<"index["<<i<<"]="<<idx[i]<<endl;
-	}
+}
 
+
+__global__ void UpdateMass()
+{
 	//update the mass_sum of from the leaf to the top
 	for (int i=TreeSize-1; i>-1; i--)
 	{
@@ -448,25 +353,30 @@ int main(int argc, char** argv)
 				quadtree[i].mass_center_x = temp_mass_center_x;
 				quadtree[i].mass_center_y = temp_mass_center_y;
 			}
-			
 		}
 	}
+}
 
-	// for test the computation result of mass center of each nodes
-	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
+
+__global__ UpdateSpeed()
+{
+	// update body position and velocities
+	for (int i=0; i<size; i++)
 	{
-		if (quadtree[i].array_num!=-1)
-		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
-			<<", mass(x,y) = ("<<quadtree[i].mass_center_x<<", "<<quadtree[i].mass_center_y<<")"<<endl;
-		}
+		double temp_vx = vx[i] + m[i]/fx[i] * T;
+		double temp_vy = vy[i] + m[i]/fy[i] * T;
+		double temp_x = x[i] + vx[i]*T + 0.5* m[i]/fx[i]*T*T;
+		double temp_y = y[i] + vy[i]*T + 0.5* m[i]/fy[i]*T*T;
+		vx[i]= temp_vx;
+		vy[i]= temp_vy;
+		x[i] = temp_x;
+		y[i] = temp_y;
 	}
-	cout<<endl;
+}
 
 
-	// approximately sort the bodies by spacial distance
-
+__global__ ComputeForce()
+{
 	// compute forces acting on each body
 	for (int i=0; i<index; i++)
 	{
@@ -552,36 +462,92 @@ int main(int argc, char** argv)
 			}
 		}
 	}
+}
 
-	// for test the computation result of mass center of each nodes
-	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
-	{
-		if (quadtree[i].array_num!=-1)
-		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", F(x,y) = ("<<quadtree[i].Fx<<", "<<quadtree[i].Fy<<")"<<endl;
-		}
-	}
-	cout<<endl;
+
+
+
+int main(int argc, char** argv)
+{
+	// the max coordinate and the minimum coordinate of 
+	// the 2D-space
+	double max_x=MIN;
+	double min_x=MAX;
+	double max_y=MIN;
+	double min_y=MAX;
+	string FileName = string(argv[1]);
+	ifstream InFile;
+	InFile.open(FileName.c_str());
 	
-	// update body position and velocities
-	for (int i=0; i<size; i++)
+	double *x, *y, *m, *vx, *vy, *fx, *fy;
+	int *idx;
+	x = (double*)malloc(size*sizeof(double));
+	y = (double*)malloc(size*sizeof(double));
+	m = (double*)malloc(size*sizeof(double));
+	vx = (double*)malloc(size*sizeof(double));
+	vy = (double*)malloc(size*sizeof(double));
+	fx = (double*)malloc(size*sizeof(double));
+	fy = (double*)malloc(size*sizeof(double));
+	idx = (int*)malloc(size*sizeof(int));
+
+	double *d_x, *d_y, *d_m, *d_vx, *d_vy, *d_fx, *d_fy;
+	int *d_idx;
+	cudaMalloc(&d_x, size*sizeof(double));
+	cudaMalloc(&d_y, size*sizeof(double));
+	cudaMalloc(&d_m, size*sizeof(double));
+	cudaMalloc(&d_vx, size*sizeof(double));
+	cudaMalloc(&d_vy, size*sizeof(double));
+	cudaMalloc(&d_fx, size*sizeof(double));
+	cudaMalloc(&d_fy, size*sizeof(double));
+	cudaMalloc(&d_idx, size*sizeof(int));
+
+	
+	// to store the quadtree information
+	__device__ body quadtree[size*4];
+	
+	string line;
+	int index = 0;
+
+	
+	
+	//read the input file
+	//find the max_x, max_y, min_x, min_y
+	while (getline(InFile, line))
 	{
-		double temp_vx = vx[i] + m[i]/fx[i] * T;
-		double temp_vy = vy[i] + m[i]/fy[i] * T;
-		double temp_x = x[i] + vx[i]*T + 0.5* m[i]/fx[i]*T*T;
-		double temp_y = y[i] + vy[i]*T + 0.5* m[i]/fy[i]*T*T;
-		vx[i]= temp_vx;
-		vy[i]= temp_vy;
-		x[i] = temp_x;
-		y[i] = temp_y;
+		stringstream sstr;
+		string word;
+		sstr << line;
+		sstr >> word;
+		x[index] = atof(word.c_str());
+		max_x = x[index]>max_x? x[index]:max_x;
+		min_x = x[index]<min_x? x[index]:min_x;
+		sstr >> word;
+		y[index] = atof(word.c_str());
+		max_y = y[index]>max_y? y[index]:max_y;
+		min_y = y[index]<min_y? y[index]:min_y;
+		sstr >> word;
+		m[index] = atof(word.c_str());
+		sstr >> word;
+		vx[index] = atof(word.c_str());
+		sstr >> word;
+		vy[index] = atof(word.c_str());
+		fx[index] = 0;
+		fy[index] = 0;
+		index++;
 	}
 
-	// test the result of the final result
-	for (int i=0; i<index; i++)
-	{
-		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<endl;
-	}
+	InFile.close();	
+
+	cudaMemcpy(d_x, x, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_y, y, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_m, m, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_vx, vx, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_vy, vy, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_fx, fx, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_fy, fy, size*sizeof(double), cudaMemcpyHostToDevice);
+	cudaMemcpy(d_idx, idx, size*sizeof(int), cudaMemcpyHostToDevice);
+
+	
 	
 
 	return 0;
