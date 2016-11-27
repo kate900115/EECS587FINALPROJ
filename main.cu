@@ -529,8 +529,19 @@ int main(int argc, char** argv)
 	cudaMemcpy(d_fy, fy, size*sizeof(double), cudaMemcpyHostToDevice);
 	cudaMemcpy(d_idx, idx, size*sizeof(int), cudaMemcpyHostToDevice);
 
-	
-	
+	FindEdge<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	ConstructQuadtree<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	UpdateMass<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	ComputeForce()<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+	UpdateSpeed()<<<(N+255)/256, 256>>>(N, 2.0f, d_x, d_y);
+
+	cudaMemcpy(x, d_x, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(y, d_y, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(vx, d_vx, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(vy, d_vy, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(fx, d_fx, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(fy, d_fy, size*sizeof(double), cudaMemcpyDeviceToHost);
+	cudaMemcpy(idx, d_idx, size*sizeof(int), cudaMemcpyDeviceToHost);	
 
 	return 0;
 
