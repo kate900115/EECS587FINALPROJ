@@ -88,7 +88,7 @@ __global__ void ConstructQuadtree()
 
 	//insert each body to the tree structure
 	quadtree[0].array_num = 0;
-	quadtree[0].mass_sum = m[0];
+	quadtree[0].mass_sum = d_m[0];
 	quadtree[0].NW_x = min_x;
 	quadtree[0].NW_y = min_y;
 	quadtree[0].SE_x = max_x;
