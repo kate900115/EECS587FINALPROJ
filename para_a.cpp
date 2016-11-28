@@ -469,19 +469,33 @@ int main(int argc, char** argv)
 					int temp_idx = CBody->tree_idx;
 					if ((quadtree[4*temp_idx+j].array_num>-1)||(quadtree[4*temp_idx+j].array_num==-3))
 					{
-						#pragma omp critical (AccessWorker)
+						
 						if (quadtree[4*temp_idx+j].mass_sum==-100)
 						{
 							IsReady = false;
-							UncomputedBody.push(&quadtree[4*temp_idx+j]);
 						}
 					}
 				}
-				#pragma omp critical (cout)
+				if (!IsReady)
 				{
-					cout<<"hhhhhhhhhhhhhhhhhhhhh"<<endl;
+					#pragma omp critical (AccessWorker)
+					{
+						UncomputedBody.push(CBody);
+						for (int j=1; j<5; j++)
+						{
+							int temp_idx = CBody->tree_idx;
+							if ((quadtree[4*temp_idx+j].array_num>-1)||(quadtree[4*temp_idx+j].array_num==-3))
+							{
+						
+								if (quadtree[4*temp_idx+j].mass_sum==-100)
+								{
+									UncomputedBody.push(&quadtree[4*temp_idx+j]);
+								}
+							}
+						}
+					}
 				}
-				if (IsReady)
+				else
 				{
 					int temp_idx = CBody->tree_idx;
 					for (int j=1; j<5; j++)
