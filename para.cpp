@@ -524,7 +524,7 @@ int main(int argc, char** argv)
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
-	
+	#pragma omp parallel for num_threads(5)
 	for (int i=0; i<index; i++)
 	{
 		//int TreeIdx = idx[i];
