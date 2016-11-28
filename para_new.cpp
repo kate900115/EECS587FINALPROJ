@@ -115,6 +115,7 @@ int main(int argc, char** argv)
 	
 	string line;
 	int index = 0;
+	stack<body*> UncomputedBody;
 
 	
 	
@@ -428,13 +429,13 @@ int main(int argc, char** argv)
 	}
 
 	//update the mass_sum of from the leaf to the top
-
+	UncomputedBody.push(&quadtree[0]);
 	// Hope to use a manager-worker model to solve the problem
-	for (int i=TreeSize-1; i>-1; i--)
+	while (UncomputedBody.size()!=0)
 	{
 		// if this is a internal node
 		// we need to update the mass center
-		if ((quadtree[i].array_num==-3)&&(quadtree[i].mass_sum<0))
+		if ((UncomputedBody.top()->array_num==-3)&&(UncomputedBody.top()->mass_sum<0))
 		{
 			//first we need to figure out whether the node is ready to compute 
 			//the mass center	
@@ -444,31 +445,36 @@ int main(int argc, char** argv)
 			double temp_mass_center_y = 0;
 			for (int j=1; j<5; j++)
 			{
-				if ((quadtree[4*i+j].array_num>-1)||(quadtree[4*i+j].array_num==-3))
+				int temp_idx = UncomputedBody.top()->tree_idx;
+				if ((quadtree[4*temp_idx+j].array_num>-1)||(quadtree[4*temp_idx+j].array_num==-3))
 				{
-					if (quadtree[4*i+j].mass_sum==-100)
+					if (quadtree[4*temp_idx+j].mass_sum==-100)
 					{
 						IsReady = false;
+						UncomputedBody.push(&quadtree[4*temp_idx+j]);
 					}
 				}
 			}
 			if (IsReady)
 			{
+				int temp_idx = UncomputedBody.top()->tree_idx;
 				for (int j=1; j<5; j++)
 				{
-					if (quadtree[4*i+j].mass_sum>0)
+					
+					if (quadtree[4*temp_idx+j].mass_sum>0)
 					{
-						temp_mass_sum = temp_mass_sum+quadtree[4*i+j].mass_sum;
-						temp_mass_center_x = temp_mass_center_x + quadtree[4*i+j].mass_sum * quadtree[4*i+j].mass_center_x;
-						temp_mass_center_y = temp_mass_center_y + quadtree[4*i+j].mass_sum * quadtree[4*i+j].mass_center_y;
+						temp_mass_sum = temp_mass_sum+quadtree[4*temp_idx+j].mass_sum;
+						temp_mass_center_x = temp_mass_center_x + quadtree[4*temp_idx+j].mass_sum * quadtree[4*temp_idx+j].mass_center_x;
+						temp_mass_center_y = temp_mass_center_y + quadtree[4*temp_idx+j].mass_sum * quadtree[4*temp_idx+j].mass_center_y;
 					}
 				}
 				temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
 				temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
 
-				quadtree[i].mass_sum = temp_mass_sum;
-				quadtree[i].mass_center_x = temp_mass_center_x;
-				quadtree[i].mass_center_y = temp_mass_center_y;
+				quadtree[temp_idx].mass_sum = temp_mass_sum;
+				quadtree[temp_idx].mass_center_x = temp_mass_center_x;
+				quadtree[temp_idx].mass_center_y = temp_mass_center_y;
+				UncomputedBody.pop();
 			}
 			
 		}
@@ -490,6 +496,7 @@ int main(int argc, char** argv)
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
+	// use depth first search
 	#pragma omp parallel for num_threads(5)
 	for (int i=0; i<index; i++)
 	{
