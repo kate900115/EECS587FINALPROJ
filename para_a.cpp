@@ -8,7 +8,7 @@
 #include <stdlib.h> 
 #include <omp.h>  
 
-#define StarNum 500
+#define StarNum 50000
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
@@ -172,7 +172,7 @@ int main(int argc, char** argv)
 	quadtree[0].SE_y = max_y;
 	quadtree[0].tree_idx = 0;
 	idx[0]=0;
-	#pragma omp parallel for num_threads(5)
+	#pragma omp parallel for num_threads(28)
 	for (long i=1; i<index; i++)
 	{
 		double x_start = min_x;
@@ -505,7 +505,7 @@ int main(int argc, char** argv)
 
 
 	
-	#pragma omp parallel num_threads(5)
+	#pragma omp parallel num_threads(28)
 	for (int i=0; i<5; i++)
 	{
 		int k=0;
@@ -558,7 +558,6 @@ int main(int argc, char** argv)
 					if (quadtree[k].IsReady)
 					{
 						//#pragma omp critical(cout)
-						cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
 						for (int j=1; j<5; j++)
 						{
 							if (quadtree[4*k+j].mass_sum>0)
