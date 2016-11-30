@@ -43,7 +43,7 @@ class body
 		double Fx;
 		double Fy;
 		//
-		int tree_idx;
+		long tree_idx;
 		
 		//constructor
 		//mass initialized as -100 indicate the result of the center of mass is not computed
@@ -113,7 +113,7 @@ int main(int argc, char** argv)
 	//map<int, body>::reverse_iterator rit;
 	
 	string line;
-	int index = 0;
+	long index = 0;
 
 	
 	
@@ -149,12 +149,12 @@ int main(int argc, char** argv)
 	cout<<"max_x="<<max_x<<", max_y="<<max_y<<endl;
 	cout<<"min_x="<<min_x<<", min_y="<<min_y<<endl;
 
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
 		cout<<x[i]<<", "<<y[i]<<", "<<m[i]<<", "<<vx[i]<<", "<<vy[i]<<endl;
 	} 
 
-	for (int i=0; i<TreeSize; i++)
+	for (long i=0; i<TreeSize; i++)
 	{
 		quadtree[i].tree_idx = i;
 	}
@@ -168,17 +168,15 @@ int main(int argc, char** argv)
 	quadtree[0].SE_y = max_y;
 	idx[0]=0;
 
-	for (int i=1; i<index; i++)
+	for (long i=1; i<index; i++)
 	{
 		double x_start = min_x;
 		double x_end = max_x;
 		double y_start = min_y;
 		double y_end = max_y;
-		int j=0;
-		int test_int=0;
+		long j=0;
 		while (quadtree[j].array_num!=-2)
 		{
-			cout<<test_int++<<endl;
 			cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
 			// if there is a hole exist
 			if (quadtree[j].array_num == -3)
@@ -212,7 +210,7 @@ int main(int argc, char** argv)
 			else if (quadtree[j].array_num>-1)
 			{
 				cout<<"there is a node!"<<endl;
-				int temp = quadtree[j].array_num;
+				long temp = quadtree[j].array_num;
 				quadtree[j].array_num = -3;
 				quadtree[j].mass_sum = -100;
 				// insert current node to next level
@@ -382,7 +380,7 @@ int main(int argc, char** argv)
 	}
 	// for test the insertion of each nodes
 	cout<<"print out the insertion result:"<<endl;
-	for (int i=0; i<TreeSize; i++)
+	for (long i=0; i<TreeSize; i++)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
@@ -392,13 +390,13 @@ int main(int argc, char** argv)
 	}
 	cout<<endl;
 	cout<<"the index array is:"<<endl;
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
 		cout<<"index["<<i<<"]="<<idx[i]<<endl;
 	}
 
 	//update the mass_sum of from the leaf to the top
-	for (int i=TreeSize-1; i>-1; i--)
+	for (long i=TreeSize-1; i>-1; i--)
 	{
 		// if this is a internal node
 		// we need to update the mass center
@@ -444,7 +442,7 @@ int main(int argc, char** argv)
 
 	// for test the computation result of mass center of each nodes
 	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
+	for (long i=0; i<TreeSize; i++)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
@@ -458,14 +456,14 @@ int main(int argc, char** argv)
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
 		//int TreeIdx = idx[i];
 		// traverse from the root of the quadtree
 		// GPU cannot use recursive
 		// so we create a stack
 		body stack[TreeSize];
-		int tail=0;
+		long tail=0;
 		stack[0]=quadtree[0];
 		tail++;
 
@@ -488,16 +486,17 @@ int main(int argc, char** argv)
 				// distance between the current node and the mass center of the node
 				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
 			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
-				cout<<"i = "<<i<<", d= "<<d<<endl;
+				//cout<<"i = "<<i<<", d= "<<d<<endl;
 
 	
 				if (s/d<theta)
 				{
-					int RealIdx = idx[i];
+					long RealIdx = idx[i];
 
 					//compute the force
 					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
+					#pragma omp critical(cout)
 					cout<<"index = "<<RealIdx<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 					
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
@@ -508,7 +507,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					int new_index = stack[tail-1].tree_idx;
+					long new_index = stack[tail-1].tree_idx;
 					stack[tail-1]=quadtree[4*new_index+1];
 					stack[tail]=quadtree[4*new_index+2];
 					stack[tail+1]=quadtree[4*new_index+3];
@@ -522,14 +521,14 @@ int main(int argc, char** argv)
 				double d = sqrt((x[i]-stack[tail-1].mass_center_x)*(x[i]-stack[tail-1].mass_center_x)
 			 	           +(y[i]-stack[tail-1].mass_center_y)*(y[i]-stack[tail-1].mass_center_y));
 
-				int RealIdx = idx[i];
+				long RealIdx = idx[i];
 				
 				if (i!=stack[tail-1].array_num)
 				{
 
 					double Forth_x = G * m[i]* stack[tail-1].mass_sum * (x[i]-stack[tail-1].mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* stack[tail-1].mass_sum * (y[i]-stack[tail-1].mass_center_y) / (d*d*d);
-
+					#pragma omp critical(cout)
 					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
@@ -545,7 +544,7 @@ int main(int argc, char** argv)
 
 	// for test the computation result of mass center of each nodes
 	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
+	for (long i=0; i<TreeSize; i++)
 	{
 		if (quadtree[i].array_num!=-1)
 		{
@@ -555,7 +554,7 @@ int main(int argc, char** argv)
 	cout<<endl;
 	
 	// update body position and velocities
-	for (int i=0; i<size; i++)
+	for (long i=0; i<size; i++)
 	{
 		double temp_vx = vx[i] + m[i]/fx[i] * T;
 		double temp_vy = vy[i] + m[i]/fy[i] * T;
@@ -568,7 +567,7 @@ int main(int argc, char** argv)
 	}
 
 	// test the result of the final result
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
 		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<endl;
 	}
