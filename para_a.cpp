@@ -8,8 +8,7 @@
 #include <stdlib.h> 
 #include <omp.h>  
 
-#define StarNum 500
-#define TreeSize 2000
+#define StarNum 10
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
@@ -45,6 +44,9 @@ class body
 		double Fy;
 		//
 		int tree_idx;
+		bool IsReady;
+		bool working;
+		bool moving;
 		
 		//constructor
 		//mass initialized as -100 indicate the result of the center of mass is not computed
@@ -72,6 +74,10 @@ class body
 			// the force 
 			Fx = 0;
 			Fy = 0;
+
+			IsReady = false;
+			working = false;
+			moving = false;
 		}
 };
 
@@ -110,7 +116,7 @@ int main(int argc, char** argv)
 	//body quadtree[size*4];
 	
 	map<int, body> quadtree;
-	//map<int, body>::iterator it;
+	map<int, body>::iterator it;
 	//map<int, body>::reverse_iterator rit;
 	
 	string line;
@@ -166,32 +172,49 @@ int main(int argc, char** argv)
 	quadtree[0].tree_idx = 0;
 	idx[0]=0;
 	#pragma omp parallel for num_threads(5)
-	for (int i=1; i<index; i++)
+	for (long i=1; i<index; i++)
 	{
 		double x_start = min_x;
 		double x_end = max_x;
 		double y_start = min_y;
 		double y_end = max_y;
-		int j=0;
-		int test_int=0;
-		
+		long j=0;
+		bool flag = false;
+				
 		while (quadtree[j].array_num!=-2)
-		{
-			cout<<test_int++<<endl;
-			cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
-			
-			// if there is a node exist
-			#pragma omp critical(update_quadtree)
-			if (quadtree[j].array_num>-1)
+		{	
+			#pragma omp critical(cout)
+			cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<", "<<quadtree[j].moving<<endl;
+			//if there is a node exist
+
+			#pragma omp critical(updatemoving)
 			{
-				//cout<<"there is a node!"<<endl;		
-				int temp = quadtree[j].array_num;
+				if ((quadtree[j].array_num>-1)&&(quadtree[j].moving == false))
+				{
+					#pragma omp critical(cout)
+					cout<<"quad "<<i<<" need moving"<<endl;
+					quadtree[j].moving = true;
+				}
+				//else if((quadtree[j].array_num>-1)&&(quadtree[j].moving == true))
+				else if(quadtree[j].moving == true)				
+				{
+					#pragma omp critical(cout)
+					cout<<"quad "<<i<<" need waiting"<<endl;
+					flag = true;
+				}		
+			}
+			if ((quadtree[j].moving == true)&&(!flag))
+			{
+				#pragma omp critical(cout)
+				cout<<"when inserting "<<i<<" we find there is a node! "<<j<<endl;		
+				long temp = quadtree[j].array_num;
 				quadtree[j].array_num = -3;
 				quadtree[j].mass_sum = -100;
 				// insert current node to next level
 				if ((x[temp]<(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 				{
-					cout<<"insert in NW"<<endl;
+					#pragma omp critical(cout)
+					cout<<temp<<" reinsert in NW"<<endl;
 					// create the first node
 					body NW;
 					
@@ -215,7 +238,7 @@ int main(int argc, char** argv)
 					SW.SE_x = (x_start+x_end)/2;
 					SW.SE_y = y_end;
 					quadtree[4*j+2]=SW;
-					
+				
 					body NE;
 					NE.tree_idx = 4*j+3;
 					NE.array_num = -2;
@@ -224,7 +247,7 @@ int main(int argc, char** argv)
 					NE.SE_x = x_end;
 					NE.SE_y = (y_start+y_end)/2;
 					quadtree[4*j+3]=NE;
-		
+			
 					body SE;
 					SE.tree_idx = 4*j+4;
 					SE.array_num = -2;
@@ -236,7 +259,8 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 				{
-					cout<<"insert in SW"<<endl;
+					#pragma omp critical(cout)
+					cout<<temp<<" reinsert in SW"<<endl;
 					// create the first node
 					body NW;
 					NW.tree_idx = 4*j+1;
@@ -259,7 +283,7 @@ int main(int argc, char** argv)
 					SW.SE_x = (x_start+x_end)/2;
 					SW.SE_y = y_end;
 					quadtree[4*j+2]=SW;
-					
+				
 					body NE;
 					NE.tree_idx = 4*j+3;
 					NE.array_num = -2;
@@ -280,7 +304,8 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 				{
-					cout<<"insert in NE"<<endl;
+					#pragma omp critical(cout)
+					cout<<temp<<" reinsert in NE"<<endl;
 					// create the first node
 					body NW;
 					NW.tree_idx = 4*j+1;
@@ -324,7 +349,8 @@ int main(int argc, char** argv)
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 				{	
-					cout<<"insert in SE"<<endl;
+					#pragma omp critical(cout)
+					cout<<temp<<" reinsert in SE"<<endl;
 					// create the first node
 					body NW;
 					NW.tree_idx = 4*j+1;
@@ -343,7 +369,7 @@ int main(int argc, char** argv)
 					SW.SE_x = (x_start+x_end)/2;
 					SW.SE_y = y_end;
 					quadtree[4*j+2]=SW;
-					
+						
 					body NE;
 					NE.tree_idx = 4*j+3;
 					NE.array_num = -2;
@@ -366,34 +392,44 @@ int main(int argc, char** argv)
 					SE.SE_y = y_end;
 					quadtree[4*j+4]=SE;	
 				}
-			}			
+				quadtree[j].moving = false;
+			}
+
+			if (!flag)
+			{
+				if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+1;
+					x_end = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}	
+				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+2;
+					x_end = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+3;
+					x_start = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+4;
+					x_start = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
+					
+			}
+			if (flag)
+			{
+				flag = false;
+			}
 			
-			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-			{
-				j=4*j+1;
-				x_end = (x_start+x_end)/2;
-				y_end = (y_start+y_end)/2;
-			}
-			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-			{
-				j=4*j+2;
-				x_end = (x_start+x_end)/2;
-				y_start = (y_start+y_end)/2;
-			}
-			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-			{
-				j=4*j+3;
-				x_start = (x_start+x_end)/2;
-				y_end = (y_start+y_end)/2;
-			}
-			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-			{
-				j=4*j+4;
-				x_start = (x_start+x_end)/2;
-				y_start = (y_start+y_end)/2;
-			}
 		}
-		#pragma omp critical(update_quadtree)
+		
 		if (quadtree[j].array_num == -2)
 		{
 			body NewBody;
@@ -413,14 +449,16 @@ int main(int argc, char** argv)
 	cout<<"quadtree size:"<<quadtree.size()<<endl;
 	// for test the insertion of each nodes
 	cout<<"print out the insertion result:"<<endl;
-	for (int i=0; i<TreeSize; i++)
+
+	for (it=quadtree.begin(); it!=quadtree.end(); it++)
 	{
-		if (quadtree[i].array_num!=-1)
+		if (it->second.array_num!=-1)
 		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
-			<<", NW = ("<<quadtree[i].NW_x<<", "<<quadtree[i].NW_y<<"), SE = ("<<quadtree[i].SE_x<<", "<<quadtree[i].SE_y<<")"<<", tree_idx = "<<quadtree[i].tree_idx<<endl;
+			cout<<"cellnum["<<it->second.tree_idx<<"] = "<<it->second.array_num<<", mass_sum = "<<it->second.mass_sum
+			<<", NW = ("<<it->second.NW_x<<", "<<it->second.NW_y<<"), SE = ("<<it->second.SE_x<<", "<<it->second.SE_y<<")"<<", tree_idx = "<<it->second.tree_idx<<endl;
 		}
 	}
+
 	cout<<endl;
 	cout<<"the index array is:"<<endl;
 	for (int i=0; i<index; i++)
@@ -428,116 +466,124 @@ int main(int argc, char** argv)
 		cout<<"index["<<i<<"]="<<idx[i]<<endl;
 	}
 
-	//update the mass_sum of from the leaf to the top
-	// Hope to use a manager-worker model to solve the problem
-	// This is manager
-	for (int i=0; i<9; i++)
-	{
-		UncomputedBody.push(&quadtree[i]);
-	}
 
-	cout<<"hhhhhhhhhhhhhhhhhhhhhhhhh"<<endl;
-		
-	// This is worker
-	#pragma omp parallel num_threads(5)
-	while (UncomputedBody.size()!=0)
-	{
-		// if this is a internal node
-		// we need to update the mass center
-		body* CBody;
-		#pragma omp critical (AccessWorker)
-		{
-			if (UncomputedBody.size()!=0)
-			{
-				CBody = UncomputedBody.top();
-				UncomputedBody.pop();
-			}
-		}
-		if (CBody!=NULL)
-		{
-			if ((CBody->array_num==-3)&&(CBody->mass_sum<0))
-			{
-			//first we need to figure out whether the node is ready to compute 
-			//the mass center
 	
-				bool IsReady = true;
-				double temp_mass_sum = 0;
-				double temp_mass_center_x = 0;
-				double temp_mass_center_y = 0;
-				for (int j=1; j<5; j++)
+	#pragma omp parallel num_threads(5)
+	for (int i=0; i<5; i++)
+	{
+		int k=0;
+		while (quadtree[0].mass_sum==-100)
+		{
+			// if this is a internal node
+			// we need to update the mass center
+			if ((quadtree[k].array_num==-3)&&(quadtree[k].mass_sum>=0))
+			{
+				k=0;
+			}
+			else if (quadtree[k].array_num>=0)
+			{
+				k=0;
+			}
+			else if (quadtree[k].array_num==-2)
+			{
+				k=0;
+			}
+			else
+			{
+				bool flag = false;
+				#pragma omp critical(checkworking)
+				if (quadtree[k].working )
 				{
-					int temp_idx = CBody->tree_idx;
-					if ((quadtree[4*temp_idx+j].array_num>-1)||(quadtree[4*temp_idx+j].array_num==-3))
-					{
-						
-						if (quadtree[4*temp_idx+j].mass_sum==-100)
-						{
-							IsReady = false;
-						}
-					}
-				}
-				if (!IsReady)
-				{
-					#pragma omp critical (AccessWorker)
-					{
-						UncomputedBody.push(CBody);
-						for (int j=1; j<5; j++)
-						{
-							int temp_idx = CBody->tree_idx;
-							if ((quadtree[4*temp_idx+j].array_num>-1)||(quadtree[4*temp_idx+j].array_num==-3))
-							{
-						
-								if (quadtree[4*temp_idx+j].mass_sum==-100)
-								{
-									UncomputedBody.push(&quadtree[4*temp_idx+j]);
-								}
-							}
-						}
-					}
+					k = 0;
+					flag = true;
 				}
 				else
 				{
-					int temp_idx = CBody->tree_idx;
+					quadtree[k].working = true;
+				}
+			
+				if ((quadtree[k].working)&&(!flag))
+				{	
+					//first we need to figure out whether the node is ready to compute 
+					//the mass center
+					double temp_mass_sum = 0;
+					double temp_mass_center_x = 0;
+					double temp_mass_center_y = 0;
+			
+					quadtree[k].IsReady = true;
 					for (int j=1; j<5; j++)
 					{
-					
-						if (quadtree[4*temp_idx+j].mass_sum>0)
+						if ((quadtree[4*k+j].array_num==-3)&&(!quadtree[4*k+j].IsReady))
 						{
-							temp_mass_sum = temp_mass_sum+quadtree[4*temp_idx+j].mass_sum;
-							temp_mass_center_x = temp_mass_center_x + quadtree[4*temp_idx+j].mass_sum * quadtree[4*temp_idx+j].mass_center_x;
-							temp_mass_center_y = temp_mass_center_y + quadtree[4*temp_idx+j].mass_sum * quadtree[4*temp_idx+j].mass_center_y;
+							quadtree[k].IsReady = false;
 						}
 					}
-					temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
-					temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
-	
-					quadtree[temp_idx].mass_sum = temp_mass_sum;
-					quadtree[temp_idx].mass_center_x = temp_mass_center_x;
-					quadtree[temp_idx].mass_center_y = temp_mass_center_y;
+					if (quadtree[k].IsReady)
+					{
+						//#pragma omp critical(cout)
+						cout<<"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"<<endl;
+						for (int j=1; j<5; j++)
+						{
+							if (quadtree[4*k+j].mass_sum>0)
+							{
+								temp_mass_sum = temp_mass_sum+quadtree[4*k+j].mass_sum;
+								temp_mass_center_x = temp_mass_center_x + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_x;
+								temp_mass_center_y = temp_mass_center_y + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_y;
+							}
+						}
+						temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
+						temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
+				
+						quadtree[k].mass_sum = temp_mass_sum;
+						quadtree[k].mass_center_x = temp_mass_center_x;
+						quadtree[k].mass_center_y = temp_mass_center_y;
+						k=0;
+					}
+			
+
+					else if (!quadtree[k].IsReady)
+					{
+						int temp_k;
+						for (int j=1; j<5; j++)
+						{
+							if ((quadtree[4*k+j].array_num==-3)&&(!quadtree[4*k+j].IsReady))
+							{
+								temp_k=4*k+j;
+							}
+						}
+						k = temp_k;
+					}
+					#pragma omp critical(checkworking)
+					quadtree[k].working = false;
 				}
-			}
+			}	
+
+		
+		
+	//	if ((quadtree[k].array_num==-3)&&(quadtree[k].mass_sum<0))
+
 		}
 	}
+
 	
-	// for test the computation result of mass center of each nodes
-	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
+	//for test the computation result of mass center of each nodes
+	cout<<"after updating the mass"<<endl;
+	for (it=quadtree.begin(); it!=quadtree.end(); it++)
 	{
-		if (quadtree[i].array_num!=-1)
+		if (it->second.array_num!=-1)
 		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", mass_sum = "<<quadtree[i].mass_sum
-			<<", mass(x,y) = ("<<quadtree[i].mass_center_x<<", "<<quadtree[i].mass_center_y<<")"<<endl;
+			cout<<"cellnum["<<it->second.tree_idx<<"] = "<<it->second.array_num<<", mass_sum = "<<it->second.mass_sum
+			<<", NW = ("<<it->second.NW_x<<", "<<it->second.NW_y<<"), SE = ("<<it->second.SE_x<<", "<<it->second.SE_y<<")"<<", tree_idx = "<<it->second.tree_idx<<endl;
 		}
 	}
 	cout<<endl;
-
-
+/*
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
 	// use depth first search
 	#pragma omp parallel for num_threads(5)
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
 		//int TreeIdx = idx[i];
 		// traverse from the root of the quadtree
@@ -565,16 +611,17 @@ int main(int argc, char** argv)
 				// distance between the current node and the mass center of the node
 				double d = sqrt((x[i]-works.top().mass_center_x)*(x[i]-works.top().mass_center_x)
 			 	           +(y[i]-works.top().mass_center_y)*(y[i]-works.top().mass_center_y));
-				cout<<"i = "<<i<<", d= "<<d<<endl;
+				//cout<<"i = "<<i<<", d= "<<d<<endl;
 
 	
 				if (s/d<theta)
 				{
-					int RealIdx = idx[i];
+					long RealIdx = idx[i];
 
 					//compute the force
 					double Forth_x = G * m[i]* works.top().mass_sum * (x[i]-works.top().mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* works.top().mass_sum * (y[i]-works.top().mass_center_y) / (d*d*d);
+					#pragma omp critical(cout)
 					cout<<"index = "<<RealIdx<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 					
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
@@ -585,7 +632,7 @@ int main(int argc, char** argv)
 				}
 				else
 				{
-					int new_index = works.top().tree_idx;
+					long new_index = works.top().tree_idx;
 					works.pop();
 					works.push(quadtree[4*new_index+1]);
 					works.push(quadtree[4*new_index+2]);
@@ -599,14 +646,14 @@ int main(int argc, char** argv)
 				double d = sqrt((x[i]-works.top().mass_center_x)*(x[i]-works.top().mass_center_x)
 			 	           +(y[i]-works.top().mass_center_y)*(y[i]-works.top().mass_center_y));
 
-				int RealIdx = idx[i];
+				long RealIdx = idx[i];
 				
 				if (i!=works.top().array_num)
 				{
 
 					double Forth_x = G * m[i]* works.top().mass_sum * (x[i]-works.top().mass_center_x) / (d*d*d); 	
 					double Forth_y = G * m[i]* works.top().mass_sum * (y[i]-works.top().mass_center_y) / (d*d*d);
-
+					#pragma omp critical(cout)
 					cout<<"index = "<<index<<", Fx = "<<Forth_x<<", Fy = "<<Forth_y<<endl;
 
 					quadtree[RealIdx].Fx = quadtree[RealIdx].Fx + Forth_x;
@@ -622,18 +669,18 @@ int main(int argc, char** argv)
 
 	// for test the computation result of mass center of each nodes
 	cout<<"print out the result of the computation of the mass center."<<endl;
-	for (int i=0; i<TreeSize; i++)
-	{
-		if (quadtree[i].array_num!=-1)
-		{
-			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", F(x,y) = ("<<quadtree[i].Fx<<", "<<quadtree[i].Fy<<")"<<endl;
-		}
-	}
+//	for (int i=0; i<TreeSize; i++)
+//	{
+//		if (quadtree[i].array_num!=-1)
+//		{
+//			cout<<"cellnum["<<i<<"] = "<<quadtree[i].array_num<<", F(x,y) = ("<<quadtree[i].Fx<<", "<<quadtree[i].Fy<<")"<<endl;
+//		}
+//	}
 	cout<<endl;
 	
 	// update body position and velocities
 	#pragma omp parallel for num_threads(5)
-	for (int i=0; i<StarNum; i++)
+	for (long i=0; i<StarNum; i++)
 	{
 		double temp_vx = vx[i] + m[i]/fx[i] * T;
 		double temp_vy = vy[i] + m[i]/fy[i] * T;
@@ -646,11 +693,11 @@ int main(int argc, char** argv)
 	}
 
 	// test the result of the final result
-	for (int i=0; i<index; i++)
+	for (long i=0; i<index; i++)
 	{
-		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<endl;
+		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<", fx ="<<fx[i]<<endl;
 	}
-	
+	*/
 
 	return 0;
 
