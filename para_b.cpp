@@ -8,13 +8,13 @@
 #include <stdlib.h> 
 #include <omp.h>  
 
-#define StarNum 50000
+//#define StarNum 50000
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
 #define G 6.67
 #define T 0.01
-#define thread_num 7
+//#define thread_num 7
 
 
 using namespace std;
@@ -94,6 +94,10 @@ int main(int argc, char** argv)
 	double min_y=MAX;
 	string FileName = string(argv[1]);
 	ifstream InFile;
+	string num = string(argv[2]);
+	int StarNum = atoi(num.c_str());
+	string thnum = string(argv[3]);
+	int thread_num = atoi(thnum.c_str());
 	InFile.open(FileName.c_str());
 	
 	// coordinate
