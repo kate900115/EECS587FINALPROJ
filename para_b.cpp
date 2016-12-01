@@ -765,7 +765,7 @@ int main(int argc, char** argv)
 
 	
 	#pragma omp parallel num_threads(thread_num)
-	for (int i=0; i<5; i++)
+	for (int i=0; i<thread_num; i++)
 	{
 		int k=0;
 		while (quadtree[0].mass_sum==-100)
