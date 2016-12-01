@@ -1,3 +1,3 @@
-FILES = para.cpp
+FILES = para_a.cpp
 all:
-	g++ -Wall -g ${FILES} -o test
+	g++ -fopenmp -Wall -g ${FILES} -o test

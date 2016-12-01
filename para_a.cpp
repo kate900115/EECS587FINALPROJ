@@ -8,7 +8,7 @@
 #include <stdlib.h> 
 #include <omp.h>  
 
-#define StarNum 50000
+#define StarNum 5000
 #define MAX 10000000
 #define MIN -10000000
 #define theta 0.5
@@ -162,6 +162,8 @@ int main(int argc, char** argv)
 	{
 		cout<<x[i]<<", "<<y[i]<<", "<<m[i]<<", "<<vx[i]<<", "<<vy[i]<<endl;
 	} 
+
+	double begin_time = omp_get_wtime();
 
 	//insert each body to the tree structure
 	quadtree[0].array_num = 0;
@@ -616,12 +618,12 @@ int main(int argc, char** argv)
 
 	cout<<"mass_all = "<<mass_all<<endl;
 	cout<<"mass_++ = "<<quadtree[0].mass_sum<<endl;
-/*
+
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
 	// use depth first search
-	#pragma omp parallel for num_threads(5)
+	#pragma omp parallel for num_threads(28)
 	for (long i=0; i<index; i++)
 	{
 		//int TreeIdx = idx[i];
@@ -718,7 +720,7 @@ int main(int argc, char** argv)
 	cout<<endl;
 	
 	// update body position and velocities
-	#pragma omp parallel for num_threads(5)
+	#pragma omp parallel for num_threads(28)
 	for (long i=0; i<StarNum; i++)
 	{
 		double temp_vx = vx[i] + m[i]/fx[i] * T;
@@ -736,8 +738,9 @@ int main(int argc, char** argv)
 	{
 		cout<<"x["<<i<<"]="<<x[i]<<", y["<<i<<"]="<<y[i]<<", vx["<<i<<"]="<<vx[i]<<", vy["<<i<<"]="<<vy[i]<<", fx ="<<fx[i]<<endl;
 	}
-	*/
-
+	
+	double end_time = omp_get_wtime();
+	cout<<"elaspe time = "<<end_time-begin_time<<endl;
 	return 0;
 
 }
