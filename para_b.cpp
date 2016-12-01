@@ -177,8 +177,8 @@ int main(int argc, char** argv)
 	idx[0]=0;
 
 
-	#pragma omp parallel for num_threads(thread_num)
-	for (int i=1; i<25000; i++)
+	//#pragma omp parallel for num_threads(thread_num)
+	for (int i=1; i<index/10; i++)
 	{
 		double x_start = min_x;
 		double x_end = max_x;
@@ -193,7 +193,7 @@ int main(int argc, char** argv)
 			//cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
 			
 			// if there is a node exist
-			#pragma omp critical(update_quadtree)
+			//#pragma omp critical(update_quadtree)
 			if (quadtree[j].array_num>-1)
 			{
 				//cout<<"there is a node!"<<endl;		
@@ -405,7 +405,7 @@ int main(int argc, char** argv)
 				y_start = (y_start+y_end)/2;
 			}
 		}
-		#pragma omp critical(update_quadtree)
+		//#pragma omp critical(update_quadtree)
 		if (quadtree[j].array_num == -2)
 		{
 			body NewBody;
@@ -426,7 +426,7 @@ int main(int argc, char** argv)
 	double part1_time = omp_get_wtime();
 
 	#pragma omp parallel for num_threads(thread_num)
-	for (long i=25000; i<index; i++)
+	for (long i=index/10; i<index; i++)
 	{
 		double x_start = min_x;
 		double x_end = max_x;
