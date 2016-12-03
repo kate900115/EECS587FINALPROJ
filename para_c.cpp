@@ -122,7 +122,7 @@ int main(int argc, char** argv)
 	
 	map<int, body> quadtree;
 	map<int, body>::iterator it;
-//	map<int, body>::reverse_iterator rit;
+	//map<int, body>::reverse_iterator rit;
 	
 	string line;
 	int index = 0;
@@ -181,27 +181,49 @@ int main(int argc, char** argv)
 	idx[0]=0;
 
 
-	//#pragma omp parallel for num_threads(thread_num)
-	for (int i=1; i<index/10; i++)
+	for (long i=1; i<index/10; i++)
 	{
 		double x_start = min_x;
 		double x_end = max_x;
 		double y_start = min_y;
 		double y_end = max_y;
-		int j=0;
-
-		
+		long j=0;
 		while (quadtree[j].array_num!=-2)
 		{
-
 			//cout<<"i="<<i<<", j="<<j<<" ,"<<quadtree[j].array_num<<endl;
-			
-			// if there is a node exist
-			//#pragma omp critical(update_quadtree)
-			if (quadtree[j].array_num>-1)
+			// if there is a hole exist
+			if (quadtree[j].array_num == -3)
 			{
-				//cout<<"there is a node!"<<endl;		
-				int temp = quadtree[j].array_num;
+				if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+1;
+					x_end = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}
+				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+2;
+					x_end = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+3;
+					x_start = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+4;
+					x_start = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
+			}
+			// if there is a node exist
+			else if (quadtree[j].array_num>-1)
+			{
+				//cout<<"there is a node!"<<endl;
+				long temp = quadtree[j].array_num;
 				quadtree[j].array_num = -3;
 				quadtree[j].mass_sum = -100;
 				// insert current node to next level
@@ -209,221 +231,164 @@ int main(int argc, char** argv)
 				{
 					//cout<<"insert in NW"<<endl;
 					// create the first node
-					body NW;
-					
-					NW.array_num = temp;
-					NW.mass_sum = m[temp];
-					NW.mass_center_x = x[temp]; 
-					NW.mass_center_y = y[temp];
-					NW.tree_idx = 4*j+1;
+					quadtree[4*j+1].array_num = temp;
+					quadtree[4*j+1].mass_sum = m[temp];
+					quadtree[4*j+1].mass_center_x = x[temp]; 
+					quadtree[4*j+1].mass_center_y = y[temp];
 					idx[temp] = 4*j+1;
-					NW.NW_x = x_start;
-					NW.NW_y = y_start;
-					NW.SE_x = (x_start+x_end)/2;
-					NW.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+1]=NW;
+					quadtree[4*j+1].NW_x = x_start;
+					quadtree[4*j+1].NW_y = y_start;
+					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 					// create the rest 3 nodes
-					body SW;
-					SW.tree_idx = 4*j+2;
-					SW.array_num = -2;
-					SW.NW_x = x_start;
-					SW.NW_y = (y_start+y_end)/2;
-					SW.SE_x = (x_start+x_end)/2;
-					SW.SE_y = y_end;
-					quadtree[4*j+2]=SW;
-					
-					body NE;
-					NE.tree_idx = 4*j+3;
-					NE.array_num = -2;
-					NE.NW_x = (x_start+x_end)/2;
-					NE.NW_y = y_start;
-					NE.SE_x = x_end;
-					NE.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+3]=NE;
-		
-					body SE;
-					SE.tree_idx = 4*j+4;
-					SE.array_num = -2;
-					SE.NW_x = (x_start+x_end)/2;
-					SE.NW_y = (y_start+y_end)/2;
-					SE.SE_x = x_end;
-					SE.SE_y = y_end;
-					quadtree[4*j+4]=SE;
+					quadtree[4*j+2].array_num = -2;
+					quadtree[4*j+2].NW_x = x_start;
+					quadtree[4*j+2].NW_y = y_start;
+					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+2].SE_y = (y_start+y_end)/2;
+				
+					quadtree[4*j+3].array_num = -2;
+					quadtree[4*j+3].NW_x = x_start;
+					quadtree[4*j+3].NW_y = y_start;
+					quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+3].SE_y = (y_start+y_end)/2;
+	
+					quadtree[4*j+4].array_num = -2;
+					quadtree[4*j+4].NW_x = x_start;
+					quadtree[4*j+4].NW_y = y_start;
+					quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 				}
 				else if ((x[temp]<(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
 				{
 					//cout<<"insert in SW"<<endl;
 					// create the first node
-					body NW;
-					NW.tree_idx = 4*j+1;
-					NW.array_num = -2;
-					NW.NW_x = x_start;
-					NW.NW_y = y_start;
-					NW.SE_x = (x_start+x_end)/2;
-					NW.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+1]=NW;
+					quadtree[4*j+1].array_num = -2;
+					quadtree[4*j+1].NW_x = x_start;
+					quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+1].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+1].SE_y = y_end;
 					// create the rest 3 nodes
-					body SW;
-					SW.tree_idx = 4*j+2;
-					SW.array_num = temp;
-					SW.mass_sum = m[temp];
-					SW.mass_center_x = x[temp]; 
-					SW.mass_center_y = y[temp];
+					quadtree[4*j+2].array_num = temp;
+					quadtree[4*j+2].mass_sum = m[temp];
+					quadtree[4*j+2].mass_center_x = x[temp]; 
+					quadtree[4*j+2].mass_center_y = y[temp];
 					idx[temp] = 4*j+2;
-					SW.NW_x = x_start;
-					SW.NW_y = (y_start+y_end)/2;
-					SW.SE_x = (x_start+x_end)/2;
-					SW.SE_y = y_end;
-					quadtree[4*j+2]=SW;
-					
-					body NE;
-					NE.tree_idx = 4*j+3;
-					NE.array_num = -2;
-					NE.NW_x = (x_start+x_end)/2;
-					NE.NW_y = y_start;
-					NE.SE_x = x_end;
-					NE.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+3]=NE;
-		
-					body SE;
-					SE.tree_idx = 4*j+4;
-					SE.array_num = -2;
-					SE.NW_x = (x_start+x_end)/2;
-					SE.NW_y = (y_start+y_end)/2;
-					SE.SE_x = x_end;
-					SE.SE_y = y_end;
-					quadtree[4*j+4]=SE;
+					quadtree[4*j+2].NW_x = x_start;
+					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+2].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+2].SE_y = y_end;
+				
+					quadtree[4*j+3].array_num = -2;
+					quadtree[4*j+3].NW_x = x_start;
+					quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+3].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+3].SE_y = y_end;
+	
+					quadtree[4*j+4].array_num = -2;
+					quadtree[4*j+4].NW_x = x_start;
+					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+4].SE_x = (x_start+x_end)/2;
+					quadtree[4*j+4].SE_y = y_end;
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]<(y_start+y_end)/2))
 				{
 					//cout<<"insert in NE"<<endl;
 					// create the first node
-					body NW;
-					NW.tree_idx = 4*j+1;
-					NW.array_num = -2;
-					NW.NW_x = x_start;
-					NW.NW_y = y_start;
-					NW.SE_x = (x_start+x_end)/2;
-					NW.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+1]=NW;
+					quadtree[4*j+1].array_num = -2;
+					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+1].NW_y = y_start;
+					quadtree[4*j+1].SE_x = x_end;
+					quadtree[4*j+1].SE_y = (y_start+y_end)/2;
 					// create the rest 3 nodes
-					body SW;
-					SW.tree_idx = 4*j+2;
-					SW.array_num = -2;
-					SW.NW_x = x_start;
-					SW.NW_y = (y_start+y_end)/2;
-					SW.SE_x = (x_start+x_end)/2;
-					SW.SE_y = y_end;
-					quadtree[4*j+2]=SW;
-		
-					body NE;
-					NE.tree_idx = 4*j+3;
-					NE.array_num = temp;
-					NE.mass_sum = m[temp];
-					NE.mass_center_x = x[temp]; 
-					NE.mass_center_y = y[temp];
+					quadtree[4*j+2].array_num = -2;
+					quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+2].NW_y = y_start;
+					quadtree[4*j+2].SE_x = x_end;
+					quadtree[4*j+2].SE_y = (y_start+y_end)/2;
+
+					quadtree[4*j+3].array_num = temp;
+					quadtree[4*j+3].mass_sum = m[temp];
+					quadtree[4*j+3].mass_center_x = x[temp]; 
+					quadtree[4*j+3].mass_center_y = y[temp];
 					idx[temp] = 4*j+3;
-					NE.NW_x = (x_start+x_end)/2;
-					NE.NW_y = y_start;
-					NE.SE_x = x_end;
-					NE.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+3]=NE;	
-					
-					body SE;
-					SE.tree_idx = 4*j+4;
-					SE.array_num = -2;
-					SE.NW_x = (x_start+x_end)/2;
-					SE.NW_y = (y_start+y_end)/2;
-					SE.SE_x = x_end;
-					SE.SE_y = y_end;
-					quadtree[4*j+4]=SE;
+					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+3].NW_y = y_start;
+					quadtree[4*j+3].SE_x = x_end;
+					quadtree[4*j+3].SE_y = (y_start+y_end)/2;
+	
+					quadtree[4*j+4].array_num = -2;
+					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+4].NW_y = y_start;
+					quadtree[4*j+4].SE_x = x_end;
+					quadtree[4*j+4].SE_y = (y_start+y_end)/2;
 				}
 				else if ((x[temp]>=(x_start+x_end)/2)&&(y[temp]>=(y_start+y_end)/2))
-				{	
+				{
 					//cout<<"insert in SE"<<endl;
 					// create the first node
-					body NW;
-					NW.tree_idx = 4*j+1;
-					NW.array_num = -2;
-					NW.NW_x = x_start;
-					NW.NW_y = y_start;
-					NW.SE_x = (x_start+x_end)/2;
-					NW.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+1]=NW;
+					quadtree[4*j+1].array_num = -2;
+					quadtree[4*j+1].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+1].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+1].SE_x = x_end;
+					quadtree[4*j+1].SE_y = y_end;
 					// create the rest 3 nodes
-					body SW;
-					SW.tree_idx = 4*j+2;
-					SW.array_num = -2;
-					SW.NW_x = x_start;
-					SW.NW_y = (y_start+y_end)/2;
-					SW.SE_x = (x_start+x_end)/2;
-					SW.SE_y = y_end;
-					quadtree[4*j+2]=SW;
-					
-					body NE;
-					NE.tree_idx = 4*j+3;
-					NE.array_num = -2;
-					NE.NW_x = (x_start+x_end)/2;
-					NE.NW_y = y_start;
-					NE.SE_x = x_end;
-					NE.SE_y = (y_start+y_end)/2;
-					quadtree[4*j+3]=NE;
-						
-					body SE;
-					SE.tree_idx = 4*j+4;
-					SE.array_num = temp;
-					SE.mass_sum = m[temp];
-					SE.mass_center_x = x[temp]; 
-					SE.mass_center_y = y[temp];
+					quadtree[4*j+2].array_num = -2;
+					quadtree[4*j+2].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+2].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+2].SE_x = x_end;
+					quadtree[4*j+2].SE_y = y_end;
+				
+					quadtree[4*j+3].array_num = -2;
+					quadtree[4*j+3].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+3].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+3].SE_x = x_end;
+					quadtree[4*j+3].SE_y = y_end;
+	
+					quadtree[4*j+4].array_num = temp;
+					quadtree[4*j+4].mass_sum = m[temp];
+					quadtree[4*j+4].mass_center_x = x[temp]; 
+					quadtree[4*j+4].mass_center_y = y[temp];
 					idx[temp] = 4*j+4;
-					SE.NW_x = (x_start+x_end)/2;
-					SE.NW_y = (y_start+y_end)/2;
-					SE.SE_x = x_end;
-					SE.SE_y = y_end;
-					quadtree[4*j+4]=SE;	
+					quadtree[4*j+4].NW_x = (x_start+x_end)/2;
+					quadtree[4*j+4].NW_y = (y_start+y_end)/2;
+					quadtree[4*j+4].SE_x = x_end;
+					quadtree[4*j+4].SE_y = y_end;
 				}
-			}			
 			
-			if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-			{
-				j=4*j+1;
-				x_end = (x_start+x_end)/2;
-				y_end = (y_start+y_end)/2;
-			}
-			else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-			{
-				j=4*j+2;
-				x_end = (x_start+x_end)/2;
-				y_start = (y_start+y_end)/2;
-			}
-			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
-			{
-				j=4*j+3;
-				x_start = (x_start+x_end)/2;
-				y_end = (y_start+y_end)/2;
-			}
-			else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
-			{
-				j=4*j+4;
-				x_start = (x_start+x_end)/2;
-				y_start = (y_start+y_end)/2;
+				if ((x[i]<(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+1;
+					x_end = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}
+				else if ((x[i]<(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+2;
+					x_end = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]<(y_start+y_end)/2))
+				{
+					j=4*j+3;
+					x_start = (x_start+x_end)/2;
+					y_end = (y_start+y_end)/2;
+				}
+				else if ((x[i]>=(x_start+x_end)/2)&&(y[i]>=(y_start+y_end)/2))
+				{
+					j=4*j+4;
+					x_start = (x_start+x_end)/2;
+					y_start = (y_start+y_end)/2;
+				}
 			}
 		}
-		//#pragma omp critical(update_quadtree)
 		if (quadtree[j].array_num == -2)
 		{
-			body NewBody;
-			NewBody.array_num = i;
-			NewBody.mass_sum = m[i];
-			NewBody.mass_center_x = x[i];
-			NewBody.mass_center_y = y[i];
-			NewBody.tree_idx = j;
-			NewBody.NW_x = quadtree[j].NW_x;
-			NewBody.NW_y = quadtree[j].NW_y;
-			NewBody.SE_x = quadtree[j].SE_x;
-			NewBody.SE_y = quadtree[j].SE_y;
+			quadtree[j].array_num = i;
+			quadtree[j].mass_sum = m[i];
+			quadtree[j].mass_center_x = x[i];
+			quadtree[j].mass_center_y = y[i];
 			idx[i]=j;
-			quadtree[j]=NewBody;
 		}
 	}
 
@@ -761,124 +726,117 @@ int main(int argc, char** argv)
 //	{
 //		cout<<"index["<<i<<"]="<<idx[i]<<endl;
 //	}
-	cout<<"relapse time = "<<part2_time-part1_time<<endl;
 
-	map<int, body>::reverse_iterator shared_rit=quadtree.rbegin();
-	#pragma omp parallel for num_threads(thread_num)
+
+	
+	#pragma omp parallel num_threads(thread_num)
 	for (int i=0; i<thread_num; i++)
 	{
-		map<int, body>::reverse_iterator rit=quadtree.rbegin();
-
-		while (rit!=quadtree.rend())
+		int k=0;
+		while (quadtree[0].mass_sum==-100)
 		{
-			//#pragma omp critical(cout)
-			//cout<<"tree index = "<<rit->second.tree_idx<<endl;
-			bool workingflag = false;
-			#pragma omp critical(changerit)
+			// if this is a internal node
+			// we need to update the mass center
+			if ((quadtree[k].array_num==-3)&&(quadtree[k].mass_sum>=0))
 			{
-
-				if ((rit->second.working == false)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
-				{	
-					//#pragma omp critical(cout)
-					//cout<<"set the current node in the locking state."<<endl;
-					rit->second.working = true;
-					workingflag = true;
-				}
-				else if ((rit->second.working == true)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
+				k=0;
+			}
+			else if (quadtree[k].array_num>=0)
+			{
+				k=0;
+			}
+			else if (quadtree[k].array_num==-2)
+			{
+				k=0;
+			}
+			else
+			{
+				bool flag = false;
+				#pragma omp critical(checkworking)
+				if (quadtree[k].working )
 				{
-					workingflag = true;
+					k = 0;
+					flag = true;
 				}
 				else
 				{
-					//#pragma omp critical(cout)
-					//cout<<"enter next node."<<endl;
-					if (rit->second.tree_idx>shared_rit->second.tree_idx)
-					{
-						rit = shared_rit;
-					}
-					else
-					{
-						rit++;
-					}
+					quadtree[k].working = true;
 				}
-				//#pragma omp critical(cout)
-				//cout<<rit->second.tree_idx<<endl;
-			}
-			if (workingflag)
-			{
-
-				//first we need to figure out whether the node is ready to compute 
-				//the mass center
-				double temp_mass_sum = 0;
-				double temp_mass_center_x = 0;
-				double temp_mass_center_y = 0;
 			
-				rit->second.IsReady = true;
-				int k=rit->second.tree_idx;
-				for (int j=1; j<5; j++)
-				{
-					if ((quadtree[4*k+j].array_num==-3)&&(quadtree[4*k+j].mass_sum==-100))
-					{
-						quadtree[k].IsReady = false;
-						//#pragma omp critical(cout)
-						//cout<<"node "<<k<<"not ready!"<<endl;
-					}
-				}
-
-
-				if (rit->second.IsReady)
-				{
-					
-					//#pragma omp critical(cout)
-					//cout<<"node "<<k<<" is ready, we calculate its mass center."<<endl;
+				if ((quadtree[k].working)&&(!flag))
+				{	
+					//first we need to figure out whether the node is ready to compute 
+					//the mass center
+					double temp_mass_sum = 0;
+					double temp_mass_center_x = 0;
+					double temp_mass_center_y = 0;
+			
+					quadtree[k].IsReady = true;
 					for (int j=1; j<5; j++)
 					{
-						if (quadtree[4*k+j].mass_sum>0)
+						if ((quadtree[4*k+j].array_num==-3)&&(!quadtree[4*k+j].IsReady))
 						{
-							temp_mass_sum = temp_mass_sum+quadtree[4*k+j].mass_sum;
-							temp_mass_center_x = temp_mass_center_x + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_x;
-							temp_mass_center_y = temp_mass_center_y + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_y;
+							quadtree[k].IsReady = false;
 						}
 					}
-					temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
-					temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
+					if (quadtree[k].IsReady)
+					{
+						//#pragma omp critical(cout)
+						for (int j=1; j<5; j++)
+						{
+							if (quadtree[4*k+j].mass_sum>0)
+							{
+								temp_mass_sum = temp_mass_sum+quadtree[4*k+j].mass_sum;
+								temp_mass_center_x = temp_mass_center_x + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_x;
+								temp_mass_center_y = temp_mass_center_y + quadtree[4*k+j].mass_sum * quadtree[4*k+j].mass_center_y;
+							}
+						}
+						temp_mass_center_x = temp_mass_center_x / temp_mass_sum;
+						temp_mass_center_y = temp_mass_center_y / temp_mass_sum;
 				
-					quadtree[k].mass_sum = temp_mass_sum;
-					quadtree[k].mass_center_x = temp_mass_center_x;
-					quadtree[k].mass_center_y = temp_mass_center_y;
-
-					#pragma omp critical(changerit)
-					{	
-						rit->second.working = false;
-						rit++;
-						if (shared_rit->second.array_num>rit->second.array_num)
-						{
-							shared_rit = rit;
-						}
+						quadtree[k].mass_sum = temp_mass_sum;
+						quadtree[k].mass_center_x = temp_mass_center_x;
+						quadtree[k].mass_center_y = temp_mass_center_y;
+						k=0;
 					}
+			
+
+					else if (!quadtree[k].IsReady)
+					{
+						int temp_k;
+						for (int j=1; j<5; j++)
+						{
+							if ((quadtree[4*k+j].array_num==-3)&&(!quadtree[4*k+j].IsReady))
+							{
+								temp_k=4*k+j;
+							}
+						}
+						k = temp_k;
+					}
+					#pragma omp critical(checkworking)
+					quadtree[k].working = false;
 				}
-				else
-				{
-					//#pragma omp critical(cout)
-					//cout<<"current node is not ready, spin."<<endl;
-				}
-			}
+			}	
+
+		
+		
+	//	if ((quadtree[k].array_num==-3)&&(quadtree[k].mass_sum<0))
+
 		}
 	}
-
 
 	double part3_time = omp_get_wtime();
 	//for test the computation result of mass center of each nodes
-	cout<<"after updating the mass"<<endl;
-	for (it=quadtree.begin(); it!=quadtree.end(); it++)
-	{
-		//if (it->second.array_num!=-1)
-		{
-			cout<<"cellnum["<<it->second.tree_idx<<"] = "<<it->second.array_num<<", mass_sum = "<<it->second.mass_sum
-			<<", NW = ("<<it->second.NW_x<<", "<<it->second.NW_y<<"), SE = ("<<it->second.SE_x<<", "<<it->second.SE_y<<")"<<", tree_idx = "<<it->second.tree_idx<<endl;
-		}
-	}
-	cout<<endl;
+	//cout<<"after updating the mass"<<endl;
+	//for (it=quadtree.begin(); it!=quadtree.end(); it++)
+//	{
+//		//if (it->second.array_num!=-1)
+//		{
+//			cout<<"cellnum["<<it->second.tree_idx<<"] = "<<it->second.array_num<<", mass_sum = "<<it->second.mass_sum
+//			<<", NW = ("<<it->second.NW_x<<", "<<it->second.NW_y<<"), SE = ("<<it->second.SE_x<<", "<<it->second.SE_y<<")"<<", tree_idx = "<<it->second.tree_idx<<endl;
+//		}
+//	}
+//	cout<<endl;
 
 	cout<<"mass_all = "<<mass_all<<endl;
 	cout<<"mass_++ = "<<quadtree[0].mass_sum<<endl;
