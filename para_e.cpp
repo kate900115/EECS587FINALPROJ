@@ -882,7 +882,7 @@ int main(int argc, char** argv)
 
 	cout<<"mass_all = "<<mass_all<<endl;
 	cout<<"mass_++ = "<<quadtree[0].mass_sum<<endl;
-/*
+
 	// approximately sort the bodies by spacial distance
 
 	// compute forces acting on each body
@@ -1008,7 +1008,7 @@ int main(int argc, char** argv)
 	cout<<"insert1 time = "<<part1_time - begin_time<<endl;
 	cout<<"insert2 time = "<<part2_time - part1_time<<endl;
 	cout<<"mass compute time = "<<part3_time - part2_time<<endl;
-	cout<<"forth compute time = "<<part4_time - part3_time<<endl;*/
+	cout<<"forth compute time = "<<part4_time - part3_time<<endl;
 	return 0;
 
 }
