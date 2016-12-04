@@ -778,34 +778,38 @@ int main(int argc, char** argv)
 			{
 				#pragma omp critical(changerit)
 				{
-	
 					if ((rit->second.working == false)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
 					{	
-						//#pragma omp critical(cout)
-						//cout<<"set the current node in the locking state."<<endl;
 						rit->second.working = true;
-						workingflag = true;
 					}
-					else if ((rit->second.working == true)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
+				}
+
+				
+	
+				if ((rit->second.working == false)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
+				{	
+					workingflag = true;
+				}
+				else if ((rit->second.working == true)&&(rit->second.array_num == -3)&&(rit->second.mass_sum = -100))
+				{
+					workingflag = true;
+				}
+				else
+				{
+					//#pragma omp critical(cout)
+					//cout<<"enter next node."<<endl;
+					if (rit->second.tree_idx>shared_rit->second.tree_idx)
 					{
-						workingflag = true;
+						rit = shared_rit;
 					}
 					else
 					{
-						//#pragma omp critical(cout)
-						//cout<<"enter next node."<<endl;
-						if (rit->second.tree_idx>shared_rit->second.tree_idx)
-						{
-							rit = shared_rit;
-						}
-						else
-						{
-							rit++;
-						}
+						rit++;
 					}
+				}
 					//#pragma omp critical(cout)
 					//cout<<rit->second.tree_idx<<endl;
-				}
+	
 				if (workingflag)
 				{
 	
